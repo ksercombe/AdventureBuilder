@@ -54,6 +54,10 @@ public class LoginActivity extends PlusBaseActivity implements LoaderCallbacks<C
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
+
+    /*
+    TESTING COMMITS
+     */
     private UserLoginTask mAuthTask = null;
 
     // UI references.
