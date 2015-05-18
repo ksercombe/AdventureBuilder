@@ -1,41 +1,77 @@
 package edu.uchicago.cs234.spr15.ksercombe.adventurebuilder;
-import java.util.Date;
-import java.util.ArrayList;
+
 import android.location.Location;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Created by katesercombe on 5/9/15.
+ * Created by evan on 5/10/15.
+ * Occasion type, can be used to represent events from Calendar, Facebook, and Eventbrite.
  */
-public interface Occasion {
-    public Date getDate();
-    public long getDuration();
+public class Occasion {
+    Date startDate;
+    Date endDate;
+    int duration = 0;
+    ArrayList<String> guests;
+    String service;
+    String title;
+    String desc;
+    Location location;
+    ArrayList<String> tags;
 
-    public ArrayList<String> getGuests();
-    public String getService();
-    public String getTitle();
-    public String getDescription();
+    public Occasion(String newTitle, String newDesc, String newService, Date start, Date end,
+                    ArrayList<String> newGuests, Location loc, ArrayList<String> newTags, int dur){
+        title = newTitle;
+        desc = newDesc;
+        service = newService;
+        startDate = start;
+        endDate = end;
+        guests = newGuests;
+        location = loc;
+        tags = newTags;
+        duration = dur;
+    }
 
-    public Object getLocation();
 
-    public ArrayList<String> getTags();
-    public void setTags(ArrayList<String> newtags);
-    public void addTag(String tag);
+    public Date getDate() {
+        return startDate;
+    }
 
-//  Remnant of old Occasion object
-//    public Occasion (Date eventTime, String from, String name, String desc){
-//        Date time = eventTime;
-//        String source = from;
-//        String title = name;
-//        String description = desc;
-//        ArrayList<String> tags ;
-//        float distance;
-//       	float[] locationBox = new float[4];
-//        int duration;
-//        float[] speed = new float[3];
-//        float[] heartRate = new float[3];
-//        ArrayList<String> names;
-//        Location location;
-//
-//    }
+    public long getDuration() { //Returns duration in minutes
+        return TimeUnit.MILLISECONDS.toMinutes(endDate.getTime() - startDate.getTime());
+    }
+
+    public ArrayList<String> getGuests() {
+        return guests;
+    }
+
+    public String getService() {
+        return service;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return desc;
+    }
+
+    public Object getLocation() {
+        return location;
+    }
+
+    public ArrayList<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(ArrayList<String> newtags) {
+        tags = newtags;
+    }
+
+    public void addTag(String tag) {
+        tags.add(tag);
+    }
 }
