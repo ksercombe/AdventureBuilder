@@ -8,6 +8,52 @@ import java.util.Random;
 
 public class Generator {
 
+
+public String ck_service(String service){
+
+        if (service.contains(""))
+
+}
+
+public String ck_title(String title){
+        if (title.contains(""))
+
+}
+
+public String ck_desc(String desc){
+
+}
+
+public ArrayList<String> tagOccasion(Occasion occ){
+    ArrayList<String> tags = new ArrayList<String>();
+    String tag;
+
+    String service = occ.getService().toLowerCase();
+    String title = occ.getTitle().toLowerCase();
+    String desc = occ.getDescription().toLowerCase();
+
+    if (service != null){
+        tag = ck_service(service);
+        tags.add(tag);
+
+    }
+
+
+    if (title != null){
+        tag = ck_title(title);
+        tags.add(tag);
+    }
+
+
+    if (desc != null){
+        tag = ck_desc(desc);
+        tags.add(tag);
+    }
+
+    return tags;
+
+}
+
 public StoryFrag fragMatch(Occasion occ, ArrayList<StoryFrag> allFrags){
    Random rand = new Random();
    ArrayList<String> occTags = occ.getTags();
