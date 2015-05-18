@@ -12,52 +12,138 @@ import java.util.Objects;
 public class Generator {
     Context context;
 
-
-public String ck_service(String service){
-    if (service.contains(""))
-        return "hi";
-    return "hi";
-}
-
-public String ck_title(String title){
-    if (title.contains(""))
-        return "hi";
-
-    return "hi";
-}
-
-public String ck_desc(String desc){
-    return "hi";
+public String ckTag(String title){
+    if (title.contains("run"))
+        return "run";
+    else if (title.contains("exercise"))
+        return "exercise";
+    else if (title.contains("walk"))
+        return "walk";
+    else if (title.contains("meal"))
+        return "meal";
+    else if (title.contains("restaurant"))
+        return "restaurant";
+    else if (title.contains("study"))
+        return "study";
+    else if (title.contains("movie"))
+        return "movie";
+    else if (title.contains("home"))
+        return "home";
+    else if (title.contains("school"))
+        return "school";
+    else if (title.contains("class"))
+        return "school";
+    else if (title.contains("work"))
+        return "work";
+    else if (title.contains("lecture"))
+        return "lecture";
+    else if (title.contains("show"))
+        return "show";
+    else if (title.contains("party"))
+        return "party";
+    else if (title.contains("sports"))
+        return "sports game";
+    else if (title.contains("game"))
+        return "sports game";
+    else if (title.contains("museum"))
+        return "museum";
+    else if (title.contains("festival"))
+        return "festival";
+    else if (title.contains("library"))
+        return "library";
+    else if (title.contains("meeting"))
+        return "meeting";
+    else if (title.contains("holiday"))
+        return "holiday";
+    else if (title.contains("birthday"))
+        return "birthday";
+    else if (title.contains("phone"))
+        return "phone call";
+    else if (title.contains("night out"))
+        return "night out";
+    else
+        return "";
 }
 
 public ArrayList<String> tagOccasion(Occasion occ){
     ArrayList<String> tags = new ArrayList<String>();
     String tag;
-
+    String descTag;
     String service = occ.getService().toLowerCase();
     String title = occ.getTitle().toLowerCase();
     String desc = occ.getDescription().toLowerCase();
 
-    if (service != null){
-        tag = ck_service(service);
-        tags.add(tag);
+    tag = ckTag(title);
+    descTag = ckTag(desc);
 
+    if (service == null){
+        return tags;
     }
 
-
-    if (title != null){
-        tag = ck_title(title);
-        tags.add(tag);
+    else if (service.contains("googlefit")){
+        if (tag.equals("")){
+            if (descTag.equals("")){
+                tags.add("exercise");
+            }
+            else{
+                tags.add(descTag);
+            }
+        }
+        else{
+            tags.add(tag);
+        }
     }
 
-
-    if (desc != null){
-        tag = ck_desc(desc);
-        tags.add(tag);
+    else if (service.contains("calendar")){
+        if (tag.equals("")){
+            if (descTag.equals("")){
+                tags.add("meeting");
+            }
+            else{
+                tags.add(descTag);
+            }
+        }
+        else{
+            tags.add(tag);
+        }
     }
 
+    else if (service.contains("facebook")){
+        if (tag.equals("")){
+            if (descTag.equals("")){
+                tags.add("party");
+            }
+            else{
+                tags.add(descTag);
+            }
+        }
+        else{
+            tags.add(tag);
+        }
+    }
+
+    else if (service.contains("eventbrite")){
+        if (tag.equals("")){
+            if (descTag.equals("")){
+                tags.add("lecture");
+            }
+            else{
+                tags.add(descTag);
+            }
+        }
+        else{
+            tags.add(tag);
+        }
+    }
+
+    else if (service.contains("phonelog")){
+        tags.add("phone call");
+    }
+
+    else {
+
+    }
     return tags;
-
 }
 
 public StoryFrag fragMatch(Occasion occ, ArrayList<StoryFrag> allFrags){
