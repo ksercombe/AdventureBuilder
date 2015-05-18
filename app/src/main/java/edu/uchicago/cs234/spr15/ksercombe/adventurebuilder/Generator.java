@@ -14,18 +14,20 @@ public class Generator {
 
 
 public String ck_service(String service){
-
-        if (service.contains(""))
-
+    if (service.contains(""))
+        return "hi";
+    return "hi";
 }
 
 public String ck_title(String title){
-        if (title.contains(""))
+    if (title.contains(""))
+        return "hi";
 
+    return "hi";
 }
 
 public String ck_desc(String desc){
-
+    return "hi";
 }
 
 public ArrayList<String> tagOccasion(Occasion occ){
