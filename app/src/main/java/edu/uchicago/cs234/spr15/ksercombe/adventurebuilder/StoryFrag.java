@@ -1,7 +1,7 @@
 /**
  * Created by katesercombe on 5/9/15.
  */
-
+package edu.uchicago.cs234.spr15.ksercombe.adventurebuilder;
 
 import java.util.ArrayList;
 

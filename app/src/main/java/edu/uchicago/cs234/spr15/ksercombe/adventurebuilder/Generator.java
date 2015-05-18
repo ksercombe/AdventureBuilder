@@ -1,6 +1,8 @@
 /**
  * Created by katesercombe on 5/14/15.
  */
+package edu.uchicago.cs234.spr15.ksercombe.adventurebuilder;
+
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -46,13 +48,13 @@ public String storyTeller(ArrayList<StoryFrag> frags, ArrayList<Occasion> occasi
             replacer = "";
             switch(currReplace) {
                 case "[NAME]":
-                    replacer = R.string.you;
+                    replacer = getString(R.string.you);
                     break;
                 case "[GUEST]":
                     ArrayList<String> guestList = currOcc.getGuests();
                     int len = guestList.size();
                     if (len > 3) {
-                        replacer = R.string.friends;
+                        replacer = res.getString(R.string.friends);
                     }
                     else{
                         for (int k = 0; k < len; k++) {

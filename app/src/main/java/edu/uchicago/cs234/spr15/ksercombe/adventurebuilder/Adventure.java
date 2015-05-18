@@ -1,3 +1,4 @@
+package edu.uchicago.cs234.spr15.ksercombe.adventurebuilder;
 import java.util.Date;
 import java.util.ArrayList;
 

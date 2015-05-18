@@ -1,3 +1,5 @@
+package edu.uchicago.cs234.spr15.ksercombe.adventurebuilder;
+
 import android.location.Location;
 
 import java.util.ArrayList;
