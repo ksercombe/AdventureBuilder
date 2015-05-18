@@ -9,15 +9,15 @@ import java.util.concurrent.TimeUnit;
  * Calendar event occasion type, can be used to represent events from Calendar, Facebook, and Eventbrite.
  */
 public class CalOccasion implements Occasion {
-    Date startDate;
-    Date endDate;
-    int duration;
-    ArrayList<String> guests;
+    Date startDate = new Date();
+    Date endDate = new Date();
+    int duration = 0;
+    ArrayList<String> guests = new ArrayList<String>();
     String service;
     String title;
-    String desc:
-    Location location;
-    ArrayList<String> tags;
+    String desc;
+    Location location = new Location();
+    ArrayList<String> tags = new ArrayList<String>();
 
 
     @Override

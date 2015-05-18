@@ -7,10 +7,14 @@ import java.util.ArrayList;
  */
 public class Adventure {
 
+    ArrayList<StoryFrag> frags = new ArrayList<StoryFrag>();
+    ArrayList<Occasion> occasions = new ArrayList<Occasion>();
+    Date date = new Date();
+    String story = "";
+
     public Adventure(ArrayList<StoryFrag> stories, ArrayList<Occasion> dayEvent, Date dayDate){
-        ArrayList<StoryFrag> frags = stories;
-        ArrayList<Occasion> occasions = dayEvent;
-        Date date = dayDate;
-        String story;
+        frags = stories;
+        occasions = dayEvent;
+        date = dayDate;
     }
 }
