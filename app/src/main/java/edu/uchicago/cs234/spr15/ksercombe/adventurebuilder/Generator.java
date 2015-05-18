@@ -5,8 +5,12 @@ package edu.uchicago.cs234.spr15.ksercombe.adventurebuilder;
 
 import java.util.ArrayList;
 import java.util.Random;
+import android.content.Context;
+import java.util.Objects;
+
 
 public class Generator {
+    Context context;
 
 public StoryFrag fragMatch(Occasion occ, ArrayList<StoryFrag> allFrags){
    Random rand = new Random();
@@ -48,13 +52,13 @@ public String storyTeller(ArrayList<StoryFrag> frags, ArrayList<Occasion> occasi
             replacer = "";
             switch(currReplace) {
                 case "[NAME]":
-                    replacer = getString(R.string.you);
+                    replacer = context.getString(R.string.you);
                     break;
                 case "[GUEST]":
                     ArrayList<String> guestList = currOcc.getGuests();
                     int len = guestList.size();
                     if (len > 3) {
-                        replacer = res.getString(R.string.friends);
+                        replacer = context.getString(R.string.friends);
                     }
                     else{
                         for (int k = 0; k < len; k++) {
@@ -63,7 +67,7 @@ public String storyTeller(ArrayList<StoryFrag> frags, ArrayList<Occasion> occasi
                     }
                     break;
                 case "[TIME]":
-                    replacer = currOcc.getDuration().toString();
+                    replacer = String.valueOf(currOcc.getDuration());
                     break;
                 case "[LOCATION]":
                     replacer = currOcc.getLocation().toString();
