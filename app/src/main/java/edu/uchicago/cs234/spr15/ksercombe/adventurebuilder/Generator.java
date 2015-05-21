@@ -3,7 +3,15 @@
  */
 package edu.uchicago.cs234.spr15.ksercombe.adventurebuilder;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.Random;
 import android.content.Context;
 import java.util.Objects;
@@ -65,7 +73,7 @@ public class Generator {
             return "";
     }
 
-    public ArrayList<String> tagOccasion(Occasion occ) {
+    public Occasion tagOccasion(Occasion occ) {
         ArrayList<String> tags = new ArrayList<String>();
         String tag;
         String descTag;
@@ -77,7 +85,7 @@ public class Generator {
         descTag = ckTag(desc);
 
         if (service == null) {
-            return tags;
+            return occ;
         } else if (service.contains("googlefit")) {
             if (tag.equals("")) {
                 if (descTag.equals("")) {
@@ -123,7 +131,8 @@ public class Generator {
         } else {
 
         }
-        return tags;
+        occ.tags = tags;
+        return occ;
     }
 
     public StoryFrag fragMatch(Occasion occ, ArrayList<StoryFrag> allFrags) {
@@ -195,8 +204,62 @@ public class Generator {
         return story;
     }
 
-    public void buildAdventure(Adventure adv) {
+    public Adventure buildAdventure() {
+        ArrayList<StoryFrag> stories = new ArrayList<StoryFrag>();
 
+        ArrayList<Occasion> dayEvent = new ArrayList<Occasion>();
+        /*BUILD OCCASION LIST HERE*/
+
+        /*read in all frags from a file*/
+        ArrayList<StoryFrag> allFrag = new ArrayList<StoryFrag>();
+        String filename = "stories.txt";
+        String line = null;
+
+        try{
+            FileReader fileReader = new FileReader(filename);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            /* not sure how to fully initialize frags; what is sent fill and will
+            n persons and location be provided in file or must we search
+
+            while((line = bufferedReader.readLine()) != null){
+
+                StoryFrag initFrag = new StoryFrag(line,);
+                allFrag.add(initFrag);
+            }
+            */
+            bufferedReader.close();
+        }
+        catch(FileNotFoundException ex){
+            System.out.println("file not found\n");
+        }
+        catch (IOException ex){
+            System.out.println("IO exception\n");
+        }
+
+        DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+        Date dayDate = new Date();
+
+        int eventSize = dayEvent.size();
+        for (int i = 0; i < eventSize; i++){
+            Occasion occ = dayEvent.get(i);
+            occ = tagOccasion(occ);
+            StoryFrag frag = fragMatch(occ,allFrag);
+            stories.add(frag);
+        }
+
+        /*what is the replaceString array list? -- list of things we may have to replace in story
+        * frags*/
+
+        String[] replaceL = {"[GUEST]","[TIME]","[LOCATION]","[NAME]"};
+        ArrayList<String> replaceString = new ArrayList<String>();
+        replaceString.addAll(Arrays.asList(replaceL));
+
+        String storyWhole = storyTeller(stories,dayEvent,replaceString);
+        /*return adv to be stored in database?*/
+
+        Adventure adv = new Adventure(stories,dayEvent,dayDate);
+        adv.story = storyWhole;
+        return adv;
 
     }
 }
