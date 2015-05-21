@@ -250,7 +250,8 @@ public class Generator {
         /*what is the replaceString array list? -- list of things we may have to replace in story
         * frags*/
 
-        String[] replaceL = {"[GUEST]","[TIME]","[LOCATION]","[NAME]"};
+        String[] replaceL = {"[GUEST]","[TIME]","[LOCATION]","[NAME]", "[CALORIES]", "[ENDTIME]", "[DURATION]", "[MOVIE]", "[FOOD]", "[EVENT NAME]"};
+
         ArrayList<String> replaceString = new ArrayList<String>();
         replaceString.addAll(Arrays.asList(replaceL));
 
