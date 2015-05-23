@@ -166,6 +166,23 @@ public class Generator {
         int numReplace = replaceStrings.size();
         String replacer = "";
         String story = "";
+        Random rand = new Random();
+        ArrayList<String> movies = new ArrayList<String>();
+        movies.add("Jackass");
+        movies.add("Silence of the Lambs");
+        movies.add("Hairspray");
+        movies.add("Four Christmases");
+        movies.add("Zoolander") ;
+        movies.add("The Emperor's New Groove");
+        movies.add("Bride and Prejudice");
+        ArrayList<String> food = new ArrayList<String>();
+        food.add("blueberries");
+        food.add("marshmallows");
+        food.add("chocolate covered crickets");
+        food.add("peanut butter");
+        food.add("chocolate chips");
+        food.add("macaroni and cheese");
+        food.add("puppy chow");
         for (int i = 0; i < numFrags; i++) {
             StoryFrag currFrag = frags.get(i);
             String actualFrag = currFrag.frag;
@@ -173,7 +190,7 @@ public class Generator {
             for (int j = 0; j < numReplace; j++) {
                 String currReplace = replaceStrings.get(j);
                 replacer = "";
-                switch (currReplace) {
+                switch(currReplace) {
                     case "[NAME]":
                         replacer = context.getString(R.string.you);
                         break;
@@ -182,17 +199,42 @@ public class Generator {
                         int len = guestList.size();
                         if (len > 3) {
                             replacer = context.getString(R.string.friends);
-                        } else {
+                        }
+                        else{
                             for (int k = 0; k < len; k++) {
                                 replacer.concat(guestList.get(k));
                             }
                         }
                         break;
-                    case "[TIME]":
+                    case "[DURATION]":
                         replacer = String.valueOf(currOcc.getDuration());
                         break;
                     case "[LOCATION]":
                         replacer = currOcc.getLocation().toString();
+                        break;
+                    case "[CALORIES]":
+                        if (currOcc.calories != 0) {
+                            replacer = Integer.toString(currOcc.calories * 1000);
+                        }
+                        else{
+                            replacer = String.valueOf(rand.nextFloat() * 1000);
+                        }
+                        break;
+                    case "[ENDTIME]":
+                        replacer = new SimpleDateFormat("HH:mm").format(currOcc.endDate.getTime());
+                        break;
+                    case "[MOVIE]":
+                        int lenMovies = movies.size();
+                        int index = rand.nextInt(lenMovies);
+                        replacer = movies.get(index);
+                        break;
+                    case "[FOOD]":
+                        int lenFood = food.size();
+                        int foodInd = rand.nextInt(lenFood);
+                        replacer = food.get(foodInd);
+                        break;
+                    case "[EVENT NAME]":
+                        replacer = currOcc.getTitle();
                         break;
                     default:
                         break;

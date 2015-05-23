@@ -19,6 +19,7 @@ public class Occasion {
     String title;
     String desc;
     Location location;
+    int calories;
     ArrayList<String> tags;
 
     public Occasion(String newTitle, String newDesc, String newService, Date start, Date end,
