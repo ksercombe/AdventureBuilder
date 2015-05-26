@@ -19,6 +19,7 @@ import android.database.DatabaseUtils;
 public class DBHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "AdventureBuilderDB.db";
     public static final String ADVENTURE_TABLE_NAME = "adventureList";
+    public static final String ADVENTURE_COLUMN_ID = "id";
     public static final String ADVENTURE_COLUMN_DATE = "date";
     public static final String ADVENTURE_COLUMN_STORY = "story";
 
@@ -29,7 +30,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public void onCreate(SQLiteDatabase db){
-        db.execSQL("create table " + ADVENTURE_TABLE_NAME + " (date text primary key, story text)");
+        db.execSQL("create table " + ADVENTURE_TABLE_NAME + " (id integer primary key, date text, story text)");
     }
 
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -48,9 +49,9 @@ public class DBHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public Cursor getData(Date date) {
+    public Cursor getData(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res = db.rawQuery("select * from " + ADVENTURE_TABLE_NAME + " where date=" + date + " ", null);
+        Cursor res = db.rawQuery("select * from " + ADVENTURE_TABLE_NAME + " where id=" + id + " ", null);
         return res;
     }
     public ArrayList getAllAdventures()
