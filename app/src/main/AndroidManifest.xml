@@ -27,6 +27,15 @@
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main" >
+        </activity>
+        <activity
+            android:name=".DisplayAdventure"
+            android:label="@string/title_activity_display_adventure" >
+        </activity>
     </application>
 
 </manifest>

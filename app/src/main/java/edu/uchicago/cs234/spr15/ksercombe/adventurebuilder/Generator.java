@@ -302,6 +302,7 @@ public class Generator {
 
         Adventure adv = new Adventure(stories,dayEvent,dayDate);
         adv.story = storyWhole;
+
         return adv;
 
     }
