@@ -13,6 +13,8 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.melnykov.fab.FloatingActionButton;
+
 
 public class MainActivity extends Activity {
     private ListView m_listview;
@@ -28,6 +30,8 @@ public class MainActivity extends Activity {
         ArrayAdapter arrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, adventureList) ;
 
         m_listview = (ListView)findViewById(R.id.listView1);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.attachToListView(m_listview);
         m_listview.setAdapter(arrayAdapter);
 
         m_listview.setOnItemClickListener(new OnItemClickListener() {
