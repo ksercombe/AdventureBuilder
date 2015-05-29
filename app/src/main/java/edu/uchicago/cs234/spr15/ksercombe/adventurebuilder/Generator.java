@@ -3,6 +3,14 @@
  */
 package edu.uchicago.cs234.spr15.ksercombe.adventurebuilder;
 
+import retrofit.Callback;
+import retrofit.ErrorHandler;
+import retrofit.RequestInterceptor;
+import retrofit.RestAdapter;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+import retrofit.converter.GsonConverter;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -12,14 +20,75 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import android.content.Context;
+import android.util.Log;
 import android.os.Bundle;
 import java.util.Objects;
 
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.internal.bind.DateTypeAdapter;
 
 public class Generator {
+    private class BriteOrderInstance implements Callback<List<BriteOrder>>{
+
+        @Override
+        public void failure(RetrofitError arg0) {
+        }
+
+        @Override
+        public void success(List<BriteOrder> arg0, Response arg1) {
+            for(int i=0; i<arg0.size(); i++){
+                briteIds.add(arg0.get(i).eventId);
+                try {
+                    bService.getEvent(arg0.get(i).eventId, new BriteOccasionInstance());
+                } catch (RetrofitError e) {
+                    System.out.println(e.getResponse().getStatus());
+                }
+            }
+        }
+
+    }
+
+    private class BriteOccasionInstance implements Callback<BriteOccasion>{
+
+        @Override
+        public void failure(RetrofitError arg0) {
+        }
+
+        @Override
+        public void success(BriteOccasion arg0, Response arg1) {
+            dayEvent.add(arg0);
+        }
+
+    }
+
+
     Context context;
+    private ArrayList<StoryFrag> stories;
+    private ArrayList<Integer> briteIds;
+    private ArrayList<Occasion> dayEvent;
+
+    //rest adapter and retrofit data services
+    private RestAdapter restAdapter;
+    private BriteService bService;
+
+    public static Gson gson = new GsonBuilder()
+            .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES) //THIS IS WHAT WE NEED
+            .registerTypeAdapter(Date.class, new DateTypeAdapter())
+            .create();
+
+
+    public class MyErrorHandler implements ErrorHandler {
+        @Override public Throwable handleError(RetrofitError cause) {
+//	  	    Response r = cause.getResponse();
+            Log.e("AdventureBuilderError", cause.getMessage(), cause.getCause());
+            return cause;
+        }
+    }
 
     public String ckTag(String title) {
         if (title.contains("run"))
@@ -168,15 +237,15 @@ public class Generator {
         String replacer = "";
         String story = "";
         Random rand = new Random();
-        ArrayList<String> movies = new ArrayList<String>();
+        ArrayList<String> movies = new ArrayList<String>(); //Great choices
         movies.add("Jackass");
         movies.add("Silence of the Lambs");
         movies.add("Hairspray");
         movies.add("Four Christmases");
-        movies.add("Zoolander") ;
+        movies.add("Zoolander"); //especially this one
         movies.add("The Emperor's New Groove");
         movies.add("Bride and Prejudice");
-        ArrayList<String> food = new ArrayList<String>();
+        ArrayList<String> food = new ArrayList<String>(); //good stuff
         food.add("blueberries");
         food.add("marshmallows");
         food.add("chocolate covered crickets");
@@ -222,7 +291,7 @@ public class Generator {
                         }
                         break;
                     case "[ENDTIME]":
-                        replacer = new SimpleDateFormat("HH:mm").format(currOcc.endDate.getTime());
+                        replacer = new SimpleDateFormat("HH:mm").format(currOcc.end.localDatetime);
                         break;
                     case "[MOVIE]":
                         int lenMovies = movies.size();
@@ -248,10 +317,31 @@ public class Generator {
     }
 
     public Adventure buildAdventure() {
-        ArrayList<StoryFrag> stories = new ArrayList<StoryFrag>();
+        stories = new ArrayList<StoryFrag>();
 
-        ArrayList<Occasion> dayEvent = new ArrayList<Occasion>();
+        dayEvent = new ArrayList<Occasion>();
         /*BUILD OCCASION LIST HERE*/
+
+        //set up eventbrite REST adapter
+        restAdapter = new RestAdapter.Builder()
+                .setEndpoint("https://www.eventbriteapi.com/v3")
+                .setErrorHandler(new MyErrorHandler())
+                .setLogLevel(RestAdapter.LogLevel.FULL)  // Do this for development too.
+                .setRequestInterceptor(new RequestInterceptor() {
+                    @Override
+                    public void intercept(RequestFacade request) {
+                        request.addHeader("Authorization","Bearer HJBOHLNUZBUFXMGVYTCN");
+                    } //Currently hard-coded to my (Evan's) EventBrite OAuth token.
+                })
+                .setConverter(new GsonConverter(gson)) //ADD THIS TO THE REST ADAPTER
+                .build();
+
+        try {
+            bService.getOrders(new BriteOrderInstance()); //if import is successful, then runs
+    } catch (RetrofitError e) {                           //BriteOrderInstance.success method
+            System.out.println(e.getResponse().getStatus());
+        }
+
 
         /*read in all frags from a file*/
         ArrayList<StoryFrag> allFrag = new ArrayList<StoryFrag>();
