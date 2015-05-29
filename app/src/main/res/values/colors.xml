@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="fab_color_primary">#ff5252</color>
+    <color name="fab_color_ripple">#FFFFFF</color>
+    <color name="fab_shadow">#B8B8B8</color>
+    <color name="fab_color_2_muted">#a56ab0</color>
+</resources>
