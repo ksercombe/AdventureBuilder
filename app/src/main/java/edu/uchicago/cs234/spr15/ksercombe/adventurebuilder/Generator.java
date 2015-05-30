@@ -344,14 +344,14 @@ public class Generator {
 
 
         /*read in all frags from a file*/
-        ArrayList<StoryFrag> allFrag = new ArrayList<StoryFrag>();
-        String filename = "stories.txt";
-        String line = null;
-
+        ArrayList<StoryFrag> allFrag = StoryFrag.getAllFrags();
+        //String filename = "stories.txt";
+        //String line = null;
+           /*
         try{
             FileReader fileReader = new FileReader(filename);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
-            /* not sure how to fully initialize frags; what is sent fill and will
+            not sure how to fully initialize frags; what is sent fill and will
             n persons and location be provided in file or must we search
 
             while((line = bufferedReader.readLine()) != null){
@@ -359,7 +359,7 @@ public class Generator {
                 StoryFrag initFrag = new StoryFrag(line,);
                 allFrag.add(initFrag);
             }
-            */
+
             bufferedReader.close();
         }
         catch(FileNotFoundException ex){
@@ -368,6 +368,7 @@ public class Generator {
         catch (IOException ex){
             System.out.println("IO exception\n");
         }
+        */
 
         DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
         Date dayDate = new Date();
