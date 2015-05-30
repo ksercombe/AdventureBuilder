@@ -6,8 +6,11 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="title_activity_display_adventure">DisplayAdventure</string>
+    <string name="title_activity_display_adventure_activity">DisplayAdventureActivity</string>
     <string name="plus">+</string>
 
     <string name="save">Save Contact</string>
+    <string name="title_activity_fblogin">FBLoginActivity</string>
+
+    <string name="facebook_app_id">669814646455720</string>
 </resources>

@@ -27,14 +27,26 @@
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
 
+        <activity
+            android:name="com.facebook.FacebookActivity"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <activity
             android:name=".MainActivity"
             android:label="@string/title_activity_main" >
         </activity>
         <activity
-            android:name=".DisplayAdventure"
-            android:label="@string/title_activity_display_adventure" >
+            android:name=".DisplayAdventureActivity"
+            android:label="@string/title_activity_display_adventure_activity" >
+        </activity>
+        <activity
+            android:name=".FBLoginActivity"
+            android:label="@string/title_activity_fblogin" >
         </activity>
     </application>
 

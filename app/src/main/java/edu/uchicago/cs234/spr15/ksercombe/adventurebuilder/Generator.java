@@ -32,7 +32,18 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.internal.bind.DateTypeAdapter;
 
+import com.facebook.AccessToken;
+import com.facebook.HttpMethod;
+import com.facebook.GraphResponse;
+import com.facebook.GraphRequest;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONException;
+import org.joda.time.DateTime;
+
 public class Generator {
+
+    private static AccessToken fbAccessToken;
     private class BriteOrderInstance implements Callback<List<BriteOrder>>{
 
         @Override
@@ -67,6 +78,31 @@ public class Generator {
     }
 
 
+    private void addFacebookEvents() {
+        new GraphRequest(fbAccessToken, "/{user-id}/events", null, HttpMethod.GET, new GraphRequest.Callback() {
+            public void onCompleted(GraphResponse response) {
+                JSONObject vals = response.getJSONObject();
+                try {
+                    List<JSONObject> events = (List<JSONObject>) vals.get("data");
+                    for (int i = 0; i < events.size(); i++) {
+                        String attending = events.get(i).getString("rsvp_status");
+                        if (attending == "Going") {
+                            FBOccasion fb = new FBOccasion(events.get(i));
+                            if (fb.start.localDatetime.getYear() == DateTime.now().getYear() && fb.start.localDatetime.getMonthOfYear() == DateTime.now().getMonthOfYear() && fb.start.localDatetime.getDayOfMonth() == DateTime.now().getDayOfMonth()) {
+                                dayEvent.add(fb);
+                            }
+                        }
+                    }
+                }
+                catch(JSONException m){
+                        //Fails to get
+                }
+
+            }
+        }).executeAsync();
+
+    }
+
     Context context;
     private ArrayList<StoryFrag> stories;
     private ArrayList<Integer> briteIds;
@@ -88,6 +124,13 @@ public class Generator {
             Log.e("AdventureBuilderError", cause.getMessage(), cause.getCause());
             return cause;
         }
+    }
+
+    public static void setAccessToken(AccessToken at){
+        fbAccessToken = at;
+    }
+    public static AccessToken getAccessToken(){
+        return fbAccessToken;
     }
 
     public String ckTag(String title) {
@@ -342,7 +385,7 @@ public class Generator {
             System.out.println(e.getResponse().getStatus());
         }
 
-
+        addFacebookEvents();
         /*read in all frags from a file*/
         ArrayList<StoryFrag> allFrag = StoryFrag.getAllFrags();
         //String filename = "stories.txt";

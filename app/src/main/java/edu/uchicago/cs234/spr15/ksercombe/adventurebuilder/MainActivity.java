@@ -13,10 +13,13 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+
+import com.facebook.login.widget.LoginButton;
 import com.melnykov.fab.FloatingActionButton;
 
 
 public class MainActivity extends Activity {
+
     private ListView m_listview;
     DBHelper actionDB;
 
@@ -40,7 +43,7 @@ public class MainActivity extends Activity {
             int id_To_Search = arg2 + 1;
             Bundle dataBundle = new Bundle();
             dataBundle.putInt("id", id_To_Search);
-            Intent intent = new Intent(getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.DisplayAdventure.class);
+            Intent intent = new Intent(getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.DisplayAdventureActivity.class);
             intent.putExtras(dataBundle);
             startActivity(intent);
         }

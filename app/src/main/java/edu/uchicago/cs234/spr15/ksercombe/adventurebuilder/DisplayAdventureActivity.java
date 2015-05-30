@@ -8,7 +8,7 @@ import android.widget.TextView;
 import android.database.Cursor;
 
 
-public class DisplayAdventure extends Activity {
+public class DisplayAdventureActivity extends Activity {
 
     private DBHelper adventureDB;
     TextView date;
