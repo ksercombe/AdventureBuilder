@@ -17,8 +17,6 @@ import android.widget.ListView;
 import com.facebook.login.widget.LoginButton;
 import com.melnykov.fab.FloatingActionButton;
 
-import static edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.Generator.buildAdventure;
-
 
 public class MainActivity extends Activity {
 
