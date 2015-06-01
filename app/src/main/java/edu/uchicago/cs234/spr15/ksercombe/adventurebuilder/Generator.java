@@ -289,9 +289,9 @@ public class Generator {
             int numTags = currFrag.tags.size();
             for (int j = 0; j < numTags; j++) {
                 for (int k = 0; k < numOccTags; k++) {
-                    if (currFrag.tags.get(j).equals(occTags.get(k))) {
+                    if (currFrag.tags.get(j).contains(occTags.get(k))) {
                         fragOptions.add(currFrag);
-                        continue;
+
                     }
                 }
             }
@@ -382,17 +382,19 @@ public class Generator {
                     default:
                         break;
                 }
-                actualFrag.replaceAll(currReplace, replacer);
+                actualFrag = actualFrag.replaceAll(currReplace.replace("[","").replace("]",""), replacer);
+                actualFrag.replace("[","").replace("]","");
+                System.out.println(actualFrag);
             }
-            story.concat(actualFrag);
+            story = story+" "+actualFrag;
         }
         return story;
     }
 
     public Adventure buildAdventure() {
-        stories = new ArrayList<StoryFrag>();
+        ArrayList<StoryFrag> stories = new ArrayList<StoryFrag>();
 
-        dayEvent = new ArrayList<Occasion>();
+        ArrayList<Occasion> dayEvent = new ArrayList<Occasion>();
         /*BUILD OCCASION LIST HERE*/
 
         //set up eventbrite REST adapter
