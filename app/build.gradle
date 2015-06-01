@@ -34,6 +34,6 @@ dependencies {
     compile 'com.squareup.okio:okio:1.0.1'
     compile 'joda-time:joda-time:2.7'
     // for joda
-    //compile 'com.facebook.android:facebook-android-sdk:4.1.0'
-    compile project(':facebook')
+    compile 'com.facebook.android:facebook-android-sdk:4.1.0'
+    //compile project(':facebook')
 }

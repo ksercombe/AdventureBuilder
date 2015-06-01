@@ -89,7 +89,7 @@ public class Generator {
                     List<JSONObject> events = (List<JSONObject>) vals.get("data");
                     for (int i = 0; i < events.size(); i++) {
                         String attending = events.get(i).getString("rsvp_status");
-                        if (attending == "Going") {
+                        if (attending.equals("Going")) {
                             FBOccasion fb = new FBOccasion(events.get(i));
                             if (fb.start.localDatetime.getYear() == DateTime.now().getYear() && fb.start.localDatetime.getMonthOfYear() == DateTime.now().getMonthOfYear() && fb.start.localDatetime.getDayOfMonth() == DateTime.now().getDayOfMonth()) {
                                 dayEvent.add(fb);
@@ -138,10 +138,14 @@ public class Generator {
 
     public void addCallEvents(){
         /*IDK IF I"M DOING THIs RIGHT...*/
-        DateTime yr = DateTime.now().getYear();
-        DateTime mon = DateTime.now().getMonthOfYear();
-        DateTime day = DateTime.now().getDayOfMonth();
-        String date = yr.toString()+mon.toString()+day.toString();
+        //DateTime yr = DateTime.now().getYear();
+        //DateTime mon = DateTime.now().getMonthOfYear();
+        //DateTime day = DateTime.now().getDayOfMonth();
+        int yr = 2015;
+        int mon = 06;
+        int day = 01;
+
+        String date = String.valueOf(yr)+String.valueOf(mon)+String.valueOf(day);
 
         String selection = CallLog.Calls.DATE + "=" + date;
         Cursor managedCursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI,null,selection,null, null);

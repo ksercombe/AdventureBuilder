@@ -17,6 +17,8 @@ import android.widget.ListView;
 import com.facebook.login.widget.LoginButton;
 import com.melnykov.fab.FloatingActionButton;
 
+import static edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.Generator.buildAdventure;
+
 
 public class MainActivity extends Activity {
 
@@ -35,6 +37,14 @@ public class MainActivity extends Activity {
         m_listview = (ListView)findViewById(R.id.listView1);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.attachToListView(m_listview);
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new Generator().buildAdventure();
+            }
+        });
+
         m_listview.setAdapter(arrayAdapter);
 
         m_listview.setOnItemClickListener(new OnItemClickListener() {
