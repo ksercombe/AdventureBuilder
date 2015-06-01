@@ -384,7 +384,6 @@ public class Generator {
                 }
                 actualFrag = actualFrag.replaceAll(currReplace.replace("[","").replace("]",""), replacer);
                 actualFrag.replace("[","").replace("]","");
-                System.out.println(actualFrag);
             }
             story = story+" "+actualFrag;
         }
