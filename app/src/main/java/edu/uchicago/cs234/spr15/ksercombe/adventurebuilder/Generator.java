@@ -23,6 +23,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.CallLog;
 import android.util.Log;
 import android.os.Bundle;
 import java.util.Objects;
@@ -133,6 +136,31 @@ public class Generator {
         return fbAccessToken;
     }
 
+    public ArrayList<Occasion>addCallEvents(ArrayList<Occasion> dayEvent){
+        /*IDK IF I"M DOING THIs RIGHT...*/
+        DateTime yr = DateTime.now().getYear();
+        DateTime mon = DateTime.now().getMonthOfYear();
+        DateTime day = DateTime.now().getDayOfMonth();
+        String date = yr.toString()+mon.toString()+day.toString();
+
+        String selection = CallLog.Calls.DATE + "=" + date;
+        Cursor managedCursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI,null,selection,null, null);
+        while (managedCursor.moveToNext()){
+            int dirCode = Integer.parseInt(managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.TYPE)));
+
+            switch (dirCode){
+                case CallLog.Calls.MISSED_TYPE:
+                    continue;
+                default:
+                    break;
+            }
+
+            CallOccasion occ = new CallOccasion(managedCursor);
+            dayEvent.add(occ);
+        }
+        return dayEvent;
+    }
+
     public String ckTag(String title) {
         if (title.contains("run"))
             return "run";
@@ -179,6 +207,8 @@ public class Generator {
         else if (title.contains("birthday"))
             return "birthday";
         else if (title.contains("phone"))
+            return "phone call";
+        else if (title.contains("call"))
             return "phone call";
         else if (title.contains("night out"))
             return "night out";
@@ -386,7 +416,12 @@ public class Generator {
         }
 
         addFacebookEvents();
+
+        /*MUST RESOLVE CURRENT DATE/TIME*/
+        dayEvent = addCallEvents(dayEvent);
+
         /*read in all frags from a file*/
+
         ArrayList<StoryFrag> allFrag = StoryFrag.getAllFrags();
         //String filename = "stories.txt";
         //String line = null;
@@ -416,6 +451,7 @@ public class Generator {
         DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
         Date dayDate = new Date();
 
+        /*MUST ORGANIZE DAY EVENT BY START TIME*/
         int eventSize = dayEvent.size();
         for (int i = 0; i < eventSize; i++){
             Occasion occ = dayEvent.get(i);
