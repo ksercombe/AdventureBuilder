@@ -136,7 +136,7 @@ public class Generator {
         return fbAccessToken;
     }
 
-    public ArrayList<Occasion>addCallEvents(ArrayList<Occasion> dayEvent){
+    public void addCallEvents(){
         /*IDK IF I"M DOING THIs RIGHT...*/
         DateTime yr = DateTime.now().getYear();
         DateTime mon = DateTime.now().getMonthOfYear();
@@ -158,10 +158,9 @@ public class Generator {
             CallOccasion occ = new CallOccasion(managedCursor);
             dayEvent.add(occ);
         }
-        return dayEvent;
     }
 
-    public String ckTag(String title) {
+    public static String ckTag(String title) {
         if (title.contains("run"))
             return "run";
         else if (title.contains("exercise"))
@@ -216,7 +215,7 @@ public class Generator {
             return "";
     }
 
-    public Occasion tagOccasion(Occasion occ) {
+    public static Occasion tagOccasion(Occasion occ) {
         ArrayList<String> tags = new ArrayList<String>();
         String tag;
         String descTag;
@@ -278,7 +277,7 @@ public class Generator {
         return occ;
     }
 
-    public StoryFrag fragMatch(Occasion occ, ArrayList<StoryFrag> allFrags) {
+    public static StoryFrag fragMatch(Occasion occ, ArrayList<StoryFrag> allFrags) {
         Random rand = new Random();
         ArrayList<String> occTags = occ.getTags();
         ArrayList<StoryFrag> fragOptions = new ArrayList<StoryFrag>();
@@ -383,7 +382,7 @@ public class Generator {
                         break;
                 }
                 actualFrag = actualFrag.replaceAll(currReplace.replace("[","").replace("]",""), replacer);
-                actualFrag.replace("[","").replace("]","");
+                actualFrag = actualFrag.replace("[","").replace("]","");
             }
             story = story+" "+actualFrag;
         }
@@ -393,7 +392,7 @@ public class Generator {
     public Adventure buildAdventure() {
         ArrayList<StoryFrag> stories = new ArrayList<StoryFrag>();
 
-        ArrayList<Occasion> dayEvent = new ArrayList<Occasion>();
+       // ArrayList<Occasion> dayEvent = new ArrayList<Occasion>();
         /*BUILD OCCASION LIST HERE*/
 
         //set up eventbrite REST adapter
@@ -419,7 +418,7 @@ public class Generator {
         addFacebookEvents();
 
         /*MUST RESOLVE CURRENT DATE/TIME*/
-        dayEvent = addCallEvents(dayEvent);
+        addCallEvents();
 
         /*read in all frags from a file*/
 
