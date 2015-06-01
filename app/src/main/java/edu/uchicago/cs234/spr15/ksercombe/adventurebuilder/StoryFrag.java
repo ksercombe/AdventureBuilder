@@ -28,7 +28,12 @@ public class StoryFrag {
             Scanner s = new Scanner(new File("storyFrags.txt"));
 
             while (s.hasNextLine()) {
-                StoryFrag x = new StoryFrag(s.next(), new ArrayList<String>(), 0, 0);
+                String[] line = s.next().split("&");
+                ArrayList<String> tag = new ArrayList<String>();
+                tag.add(line[1].toLowerCase());
+                String people = line[2].replaceAll(" \n\r","");
+                String location = line[3].replaceAll(" \n\r","");
+                StoryFrag x = new StoryFrag(line[0], tag, Integer.parseInt(people), Integer.parseInt(location));
                 allFrags.add(x);
             }
             s.close();
