@@ -18,20 +18,30 @@ import com.facebook.login.LoginResult;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import android.content.Context;
+import android.util.Log;
+import java.security.NoSuchAlgorithmException;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.Signature;
+import java.security.MessageDigest;
+import android.util.Base64;
 
 public class FBLoginActivity extends ActionBarActivity {
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i("FB", "Created main fbLoginActiviy");
         super.onCreate(savedInstanceState);
         FacebookSdk.sdkInitialize(getApplicationContext());
+
         setContentView(R.layout.activity_fblogin);
 
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
+                    .add(R.id.container, new PlaceholderFragment(this.getApplicationContext()))
                     .commit();
         }
     }
@@ -68,12 +78,15 @@ public class FBLoginActivity extends ActionBarActivity {
         CallbackManager callbackManager;
         Context context;
 
-        public PlaceholderFragment() {
+        public PlaceholderFragment(Context context1) {
+            context = context1;
         }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
+
+            Log.i("FB", "Started Facebook Activity");
             FacebookSdk.sdkInitialize(context.getApplicationContext());
             View view = inflater.inflate(R.layout.fragment_fblogin, container, false);
 
@@ -83,23 +96,34 @@ public class FBLoginActivity extends ActionBarActivity {
             loginButton.setFragment(this);
             loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
                 @Override
-                public void onSuccess (LoginResult loginResult){
+                public void onSuccess(LoginResult loginResult) {
+                    Log.i("FB:", "SUCCESS");
                     Generator.setAccessToken(loginResult.getAccessToken());
                     Intent intent = new Intent(context.getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.MainActivity.class);
                     startActivity(intent);
                 }
+
                 @Override
                 public void onCancel() {
+                    Log.i("FB:", "CANCEL");
                     Generator.setAccessToken(null);  //User does not allow access
                     Intent intent = new Intent(context.getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.MainActivity.class);
                     startActivity(intent);
                 }
+
                 @Override
-                public void onError (FacebookException exception){
+                public void onError(FacebookException exception) {
+                    Log.i("FB:", "ERROR");
                     //App Code
                 }
             });
             return view;
+        }
+
+        @Override
+        public void onActivityResult(int requestCode, int resultCode, Intent data){
+            super.onActivityResult(requestCode, resultCode, data);
+            callbackManager.onActivityResult(requestCode, resultCode, data);
         }
     }
 }

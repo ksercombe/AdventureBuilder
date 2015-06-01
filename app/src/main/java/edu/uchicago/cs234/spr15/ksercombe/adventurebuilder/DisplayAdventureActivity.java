@@ -6,7 +6,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.database.Cursor;
-
+import android.util.Log;
 
 public class DisplayAdventureActivity extends Activity {
 
@@ -17,6 +17,7 @@ public class DisplayAdventureActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i("DISPLAY", "In display adventure");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display_adventure);
         date = (TextView) findViewById(R.id.editTextDate);

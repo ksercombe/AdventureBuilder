@@ -12,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.util.Log;
 
 
 import com.facebook.login.widget.LoginButton;
@@ -25,6 +26,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i("Main", "Created Main Activity");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
