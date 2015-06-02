@@ -36,6 +36,7 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.login.widget.LoginButton;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -59,7 +60,6 @@ import android.os.StrictMode;
 
 
 public class MainActivity extends Activity {
-
     private static AccessToken fbAccessToken;
     private static String fbUserId;
     private class BriteOrderInstance implements Callback<List<BriteOrder>> {
@@ -102,6 +102,15 @@ public class MainActivity extends Activity {
     private ArrayList<StoryFrag> stories = new ArrayList<StoryFrag>();
     private ArrayList<Integer> briteIds = new ArrayList<Integer>();
     private ArrayList<Occasion> dayEvent = new ArrayList<Occasion>();
+    //FIT
+    private static final int REQUEST_OAUTH = 1;
+
+    private static final String AUTH_PENDING = "auth_state_pending";
+    private boolean authInProgress = false;
+    private GoogleApiClient mClient = null;
+
+    //FIT
+
 
     //rest adapter and retrofit data services
     private RestAdapter restAdapter;
@@ -134,6 +143,14 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //FIT
+        if (savedInstanceState != null) {
+            authInProgress = savedInstanceState.getBoolean(AUTH_PENDING);
+        }
+
+        buildFitnessClient();
+        //FIT
+
         actionDB = new DBHelper(this);
         ArrayList adventureList = actionDB.getAllAdventures();
         ArrayAdapter arrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, adventureList) ;
@@ -163,6 +180,8 @@ public class MainActivity extends Activity {
                 startActivity(intent);
             }
         });
+
+
     }
 
 
@@ -187,6 +206,14 @@ public class MainActivity extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    //FIT
+    private void buildFitnessClient(){
+        mClient = new GoogleApiClient.Builder(this).addApi(
+        ).addScope.addConnectionCallbacks().addOnConnectionFailedListener().build();
+
+    }
+    //FIT
 
     //GENERATOR CODE
 
@@ -311,6 +338,9 @@ public class MainActivity extends Activity {
                 //CallOccasion occ = new CallOccasion(managedCursor);
                 Occasion occ = new Occasion();
                 occ.duration = managedCursor.getInt(managedCursor.getColumnIndex(CallLog.Calls.DURATION));
+                //EventTime start = new EventTime();
+                //start.setStartTime(formatter.format(cDate));
+                //occ.start = start;
                 occ.service = "phonelog";
                 occ.title = "call";
                 occ.desc = managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.NUMBER));
@@ -680,6 +710,7 @@ public class MainActivity extends Activity {
 
         Adventure adv = new Adventure(stories,dayEvent,dayDate);
         adv.story = storyWhole;
+
         actionDB.insertAdventure(adv);
         Intent intent = new Intent(getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.MainActivity.class);
         startActivity(intent);
