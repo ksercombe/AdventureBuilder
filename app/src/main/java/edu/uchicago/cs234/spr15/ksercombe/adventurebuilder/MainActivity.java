@@ -38,12 +38,15 @@ import com.melnykov.fab.FloatingActionButton;
 import org.joda.time.DateTime;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 import retrofit.Callback;
 import retrofit.ErrorHandler;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
+
+import android.os.StrictMode;
 
 
 public class MainActivity extends Activity {
@@ -179,7 +182,8 @@ public class MainActivity extends Activity {
 
     private void addFacebookEvents() {
         Log.i("FB: ", "In addFacebookEvents");
-
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
         GraphRequest request = new GraphRequest(fbAccessToken, "/me", null, HttpMethod.GET, new GraphRequest.Callback(){
             public void onCompleted(GraphResponse response){
                 JSONObject user = response.getJSONObject();
@@ -195,21 +199,22 @@ public class MainActivity extends Activity {
         Bundle parameters = new Bundle();
         parameters.putString("fields", "id");
         request.setParameters(parameters);
-        request.executeAsync();
-        new GraphRequest(fbAccessToken, "/" + fbUserId +"/events", null, HttpMethod.GET, new GraphRequest.Callback() {
+        request.executeAndWait();
+        GraphRequest request2 = new GraphRequest(fbAccessToken, "/" + fbUserId +"/events", null, HttpMethod.GET, new GraphRequest.Callback() {
             public void onCompleted(GraphResponse response) {
                 JSONObject vals = response.getJSONObject();
                 try {
-                    List<JSONObject> events = (List<JSONObject>) vals.get("data");
-                    for (int i = 0; i < events.size(); i++) {
-                        String attending = events.get(i).getString("rsvp_status");
+                    JSONArray events =  vals.getJSONArray("data");
+                    for (int i = 0; i < events.length(); i++) {
+                        JSONObject currEvent = events.getJSONObject(i);
+                        String attending = currEvent.getString("rsvp_status");
                         Log.i("FB: ", "Status: "+ attending);
-                        if (attending.equals("Going")) {
-                            FBOccasion fb = new FBOccasion(events.get(i));
-                            if (fb.start.localDatetime.getYear() == DateTime.now().getYear() && fb.start.localDatetime.getMonthOfYear() == DateTime.now().getMonthOfYear() && fb.start.localDatetime.getDayOfMonth() == DateTime.now().getDayOfMonth()) {
+                        if (attending.equals("attending")) {
+                            FBOccasion fb = new FBOccasion(currEvent);
+                            //if (fb.start.localDatetime.getYear() == DateTime.now().getYear() && fb.start.localDatetime.getMonthOfYear() == DateTime.now().getMonthOfYear() && fb.start.localDatetime.getDayOfMonth() == DateTime.now().getDayOfMonth()) {
                                 dayEvent.add(fb);
                                 Log.i("FB: ", "Added Event!");
-                            }
+                            //}
                         }
                     }
                 }
@@ -219,7 +224,11 @@ public class MainActivity extends Activity {
                 }
 
             }
-        }).executeAsync();
+        });
+        Bundle parameters2 = new Bundle();
+        parameters.putString("fields", "data");
+        request2.setParameters(parameters2);
+        request2.executeAsync();
 
     }
 
@@ -513,8 +522,10 @@ public class MainActivity extends Activity {
 
         addFacebookEvents();
 
+        Log.i("Main: ", "After FB events");
         /*MUST RESOLVE CURRENT DATE/TIME*/
         addCallEvents(context);
+        Log.i("Main: ", "After Call Events");
 
         /*read in all frags from a file*/
 
@@ -547,6 +558,7 @@ public class MainActivity extends Activity {
         DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
         Date dayDate = new Date();
 
+        Log.i("Main: ", "before tagging");
         /*MUST ORGANIZE DAY EVENT BY START TIME*/
         int eventSize = dayEvent.size();
         for (int i = 0; i < eventSize; i++){
