@@ -1,8 +1,11 @@
 package edu.uchicago.cs234.spr15.ksercombe.adventurebuilder;
+import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -13,13 +16,22 @@ import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
 
+import android.accounts.AccountManager;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.database.Cursor;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
 import android.provider.CallLog;
+import android.util.Base64;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,7 +48,18 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.login.widget.LoginButton;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.services.calendar.CalendarScopes;
+import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.Events;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -59,6 +82,7 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 import android.os.StrictMode;
+import android.widget.Toast;
 
 
 public class MainActivity extends Activity {
@@ -104,6 +128,7 @@ public class MainActivity extends Activity {
     private ArrayList<StoryFrag> stories = new ArrayList<StoryFrag>();
     private ArrayList<Integer> briteIds = new ArrayList<Integer>();
     private ArrayList<Occasion> dayEvent = new ArrayList<Occasion>();
+    private ArrayList<Event> calEvents = new ArrayList<Event>();
     //FIT
     private static final int REQUEST_OAUTH = 1;
 
@@ -139,11 +164,56 @@ public class MainActivity extends Activity {
         return fbAccessToken;
     }
 
+    /**
+      * A Google Calendar API service object used to access the API.
+      * Note: Do not confuse this class with API library's model classes, which
+      * represent specific data structures.
+      */
+        com.google.api.services.calendar.Calendar mService;
+
+    GoogleAccountCredential credential;
+    final HttpTransport transport = AndroidHttp.newCompatibleTransport();
+    final JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
+
+    static final int REQUEST_ACCOUNT_PICKER = 1000;
+    static final int REQUEST_AUTHORIZATION = 1001;
+    static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
+    private static final String PREF_ACCOUNT_NAME = "accountName";
+    private static final String[] SCOPES = { CalendarScopes.CALENDAR_READONLY };
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i("Main", "Created Main Activity");
         super.onCreate(savedInstanceState);
+
+//        try {
+//            PackageInfo info = getPackageManager().getPackageInfo(
+//                    "edu.uchicago.cs234.spr15.ksercombe.adventurebuilder",
+//                    PackageManager.GET_SIGNATURES);
+//            for (Signature signature : info.signatures) {
+//                MessageDigest md = MessageDigest.getInstance("SHA");
+//                md.update(signature.toByteArray());
+//                Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+//            }
+//        } catch (PackageManager.NameNotFoundException e) {
+//        } catch (NoSuchAlgorithmException e) {
+//        }
         setContentView(R.layout.activity_main);
+
+        //CALENDAR
+        // Initialize credentials and service object.
+        SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
+        credential = GoogleAccountCredential.usingOAuth2(
+            getApplicationContext(), Arrays.asList(SCOPES))
+            .setBackOff(new ExponentialBackOff())
+            .setSelectedAccountName(settings.getString(PREF_ACCOUNT_NAME, null));
+
+        mService = new com.google.api.services.calendar.Calendar.Builder(
+            transport, jsonFactory, credential)
+            .setApplicationName("Google Calendar API Android Quickstart")
+            .build();
 
         //FIT
         if (savedInstanceState != null) {
@@ -168,6 +238,8 @@ public class MainActivity extends Activity {
                 Log.i("STORY whole:", "PROPERLY RETURN "+adv.story);
             }
         });
+
+
 
         m_listview.setAdapter(arrayAdapter);
 
@@ -215,9 +287,208 @@ public class MainActivity extends Activity {
         ).addScope.addConnectionCallbacks().addOnConnectionFailedListener().build();
 
     }*/
+    //GENERATOR CODE
+
+    //CALENDAR
+
+//    /**
+//     * Called whenever this activity is pushed to the foreground, such as after
+//     * a call to onCreate().
+//     */
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        if (isGooglePlayServicesAvailable()) {
+//            refreshResults();
+//        } else {
+//            Toast toast = Toast.makeText(getApplicationContext(), "Google Play Services required: " +
+//                    "after installing, close and relaunch this app.", Toast.LENGTH_SHORT);
+//            toast.show();
+//        }
+//    }
+
+    /**
+     * Called when an activity launched here (specifically, AccountPicker
+     * and authorization) exits, giving you the requestCode you started it with,
+     * the resultCode it returned, and any additional data from it.
+     * @param requestCode code indicating which activity result is incoming.
+     * @param resultCode code indicating the result of the incoming
+     *     activity result.
+     * @param data Intent (containing result data) returned by incoming
+     *     activity result.
+     */
+    @Override
+    protected void onActivityResult(
+            int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch(requestCode) {
+            case REQUEST_GOOGLE_PLAY_SERVICES:
+                if (resultCode == RESULT_OK) {
+                    refreshResults();
+                } else {
+                    isGooglePlayServicesAvailable();
+                }
+                break;
+            case REQUEST_ACCOUNT_PICKER:
+                if (resultCode == RESULT_OK && data != null &&
+                        data.getExtras() != null) {
+                    String accountName =
+                            data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+                    if (accountName != null) {
+                        credential.setSelectedAccountName(accountName);
+                        SharedPreferences settings =
+                                getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.putString(PREF_ACCOUNT_NAME, accountName);
+                        editor.commit();
+                        refreshResults();
+                    }
+                } else if (resultCode == RESULT_CANCELED) {
+                    Toast toast = Toast.makeText(getApplicationContext(), "Account unspecified", Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+                break;
+            case REQUEST_AUTHORIZATION:
+                if (resultCode == RESULT_OK) {
+                    refreshResults();
+                } else {
+                    chooseAccount();
+                }
+                break;
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    /**
+     * Attempt to get a set of data from the Google Calendar API to display. If the
+     * email address isn't known yet, then call chooseAccount() method so the
+     * user can pick an account.
+     */
+    private void refreshResults() {
+        Log.d("AdventureBuilderDebug","results refreshed!");
+        if (credential.getSelectedAccountName() == null) {
+            chooseAccount();
+        } else {
+            Log.d("AdventureBuilderDebug","account selected");
+            if (isDeviceOnline()) {
+                Log.d("AdventureBuilderDebug","apiasynctask started");
+                new ApiAsyncTask(this).execute();
+
+//                // List the last 10 events from the primary calendar?
+//                com.google.api.client.util.DateTime now = new com.google.api.client.util.DateTime(System.currentTimeMillis());
+//                List<String> eventStrings = new ArrayList<String>();
+//                Events events = null;
+//                try {
+//                    events = mService.events().list("primary")
+//                            .setMaxResults(10)
+//                            .setTimeMax(now)
+//                            .setOrderBy("endTime")
+//                            .setSingleEvents(true)
+//                            .execute();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                List<Event> items = events.getItems();
+//
+//                for (Event event : items) { //THIS IS WHERE EVENTS ARE MADE TO OCCASIONS
+//                    com.google.api.client.util.DateTime start = event.getStart().getDateTime();
+//                    if (start == null) {
+//                        // All-day events don't have start times, so just use
+//                        // the start date.
+//                        start = event.getStart().getDate();
+//                    }
+//                    eventStrings.add(
+//                            String.format("%s (%s)", event.getSummary(), start));
+//                }
+////                calStrings.addAll(eventStrings);
+            } else {
+                Toast toast = Toast.makeText(getApplicationContext(), "No network connection available", Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        }
+    }
+
+    /**
+     * Starts an activity in Google Play Services so the user can pick an
+     * account.
+     */
+    private void chooseAccount() {
+        startActivityForResult(
+                credential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
+    }
+
+    /**
+     * Checks whether the device currently has a network connection.
+     * @return true if the device has a network connection, false otherwise.
+     */
+    private boolean isDeviceOnline() {
+        ConnectivityManager connMgr =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        return (networkInfo != null && networkInfo.isConnected());
+    }
+
+    /**
+     * Check that Google Play services APK is installed and up to date. Will
+     * launch an error dialog for the user to update Google Play Services if
+     * possible.
+     * @return true if Google Play Services is available and up to
+     *     date on this device; false otherwise.
+     */
+    private boolean isGooglePlayServicesAvailable() {
+        final int connectionStatusCode =
+                GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if (GooglePlayServicesUtil.isUserRecoverableError(connectionStatusCode)) {
+            showGooglePlayServicesAvailabilityErrorDialog(connectionStatusCode);
+            return false;
+        } else if (connectionStatusCode != ConnectionResult.SUCCESS ) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Display an error dialog showing that Google Play Services is missing
+     * or out of date.
+     * @param connectionStatusCode code describing the presence (or lack of)
+     *     Google Play Services on this device.
+     */
+    void showGooglePlayServicesAvailabilityErrorDialog(
+            final int connectionStatusCode) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Dialog dialog = GooglePlayServicesUtil.getErrorDialog(
+                        connectionStatusCode,
+                        MainActivity.this,
+                        REQUEST_GOOGLE_PLAY_SERVICES);
+                dialog.show();
+            }
+        });
+    }
+
+
+    public void updateCalEvents(ArrayList<Event> events){
+        calEvents = events;
+    }
+
+
+
+
+    //END CALENDAR
+
+//    //FIT
+//    private void buildFitnessClient(){
+//        mClient = new GoogleApiClient.Builder(this).addApi(
+//        ).addScope.addConnectionCallbacks().addOnConnectionFailedListener().build();
+//
+//    }
     //FIT
 
-    //GENERATOR CODE
+
+
+
 
     private void addFacebookEvents() {
         Log.i("FB: ", "In addFacebookEvents");
@@ -634,7 +905,7 @@ public class MainActivity extends Activity {
                 Log.i("Replacing: ", replacer);
                 currReplace = currReplace.replace("[", "\\[").replace("]", "\\]");
                 Log.i("Replacing: ", currReplace);
-                actualFrag = actualFrag.replaceAll(currReplace , replacer);
+                actualFrag = actualFrag.replaceAll(currReplace, replacer);
                 Log.i("STORY REPLACE:", actualFrag);
             }
             story = story+" "+actualFrag;
@@ -673,6 +944,10 @@ public class MainActivity extends Activity {
         }*/
 
         addFacebookEvents();
+        refreshResults();
+
+
+        //addFacebookEvents();
 
         Log.i("Main: ", "After FB events");
         /*MUST RESOLVE CURRENT DATE/TIME*/
