@@ -20,6 +20,7 @@ import com.facebook.CallbackManager;
 import com.facebook.login.LoginResult;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
+import com.facebook.AccessToken;
 import android.content.Context;
 import android.util.Log;
 import java.security.NoSuchAlgorithmException;
@@ -49,6 +50,11 @@ public class FBLoginActivity extends ActionBarActivity {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new PlaceholderFragment(this.getApplicationContext()))
                     .commit();
+        }
+        else{
+            Log.i("FB: ", "in else");
+            Intent intent = new Intent(getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.MainActivity.class);
+            startActivity(intent);
         }
     }
 
@@ -85,6 +91,8 @@ public class FBLoginActivity extends ActionBarActivity {
         Context context;
         private String fbUserId;
 
+        public PlaceholderFragment(){};
+
         public PlaceholderFragment(Context context1) {
             context = context1;
         }
@@ -101,31 +109,39 @@ public class FBLoginActivity extends ActionBarActivity {
             LoginButton loginButton = (LoginButton) view.findViewById(R.id.login_button);
             loginButton.setReadPermissions("user_events");
             loginButton.setFragment(this);
+            AccessToken accessToken = AccessToken.getCurrentAccessToken();
+            if (accessToken != null){
+                MainActivity.setAccessToken(accessToken);
+                Intent intent = new Intent(context.getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.MainActivity.class);
+                startActivity(intent);
+            }
+            else {
 
-            loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
-                @Override
-                public void onSuccess(LoginResult loginResult) {
-                    Log.i("FB:", "SUCCESS");
-                    MainActivity.setAccessToken(loginResult.getAccessToken());
+                loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+                    @Override
+                    public void onSuccess(LoginResult loginResult) {
+                        Log.i("FB:", "SUCCESS");
+                        MainActivity.setAccessToken(loginResult.getAccessToken());
 
-                    Intent intent = new Intent(context.getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.MainActivity.class);
-                    startActivity(intent);
-                }
+                        Intent intent = new Intent(context.getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.MainActivity.class);
+                        startActivity(intent);
+                    }
 
-                @Override
-                public void onCancel() {
-                    Log.i("FB:", "CANCEL");
-                    MainActivity.setAccessToken(null);  //User does not allow access
-                    Intent intent = new Intent(context.getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.MainActivity.class);
-                    startActivity(intent);
-                }
+                    @Override
+                    public void onCancel() {
+                        Log.i("FB:", "CANCEL");
+                        Generator.setAccessToken(null);  //User does not allow access
+                        Intent intent = new Intent(context.getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.MainActivity.class);
+                        startActivity(intent);
+                    }
 
-                @Override
-                public void onError(FacebookException exception) {
-                    Log.i("FB:", "ERROR");
-                    //App Code
-                }
-            });
+                    @Override
+                    public void onError(FacebookException exception) {
+                        Log.i("FB:", "ERROR");
+                        //App Code
+                    }
+                });
+            }
             return view;
         }
 
