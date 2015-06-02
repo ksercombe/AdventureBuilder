@@ -126,14 +126,16 @@ public class MainActivity extends ActionBarActivity {
     private ArrayList<StoryFrag> stories = new ArrayList<StoryFrag>();
     private ArrayList<Integer> briteIds = new ArrayList<Integer>();
     private ArrayList<Occasion> dayEvent = new ArrayList<Occasion>();
+    boolean isFinished = false;
     private ArrayList<Event> calEvents = new ArrayList<Event>();
     //FIT
+    /*
     private static final int REQUEST_OAUTH = 1;
 
     private static final String AUTH_PENDING = "auth_state_pending";
     private boolean authInProgress = false;
     private GoogleApiClient mClient = null;
-
+    */
     //FIT
 
 
@@ -343,6 +345,7 @@ public class MainActivity extends ActionBarActivity {
                         refreshResults();
                     }
                 } else if (resultCode == RESULT_CANCELED) {
+                    isFinished = true;
                     Toast toast = Toast.makeText(getApplicationContext(), "Account unspecified", Toast.LENGTH_SHORT);
                     toast.show();
                 }
@@ -371,6 +374,7 @@ public class MainActivity extends ActionBarActivity {
             Log.d("Cal: ", "choosing account");
             chooseAccount();
         } else {
+            isFinished = true;
             Log.d("AdventureBuilderDebug","account selected");
             if (isDeviceOnline()) {
                 Log.d("AdventureBuilderDebug","apiasynctask started");
@@ -949,73 +953,78 @@ public class MainActivity extends ActionBarActivity {
         //addFacebookEvents();
         refreshResults();
 
+        while(isFinished == false){
+            Log.i("ISFINISHED: ", "FALSE");
+        }
 
         //addFacebookEvents();
+        while(isFinished == true) {
+            Log.i("ISFINISHED: ", "TRUE");
+            Log.i("Main: ", "After FB events");
+            /*MUST RESOLVE CURRENT DATE/TIME*/
+            addCallEvents(context);
+            Log.i("Main: ", "After Call Events");
 
-        Log.i("Main: ", "After FB events");
-        /*MUST RESOLVE CURRENT DATE/TIME*/
-        addCallEvents(context);
-        Log.i("Main: ", "After Call Events");
+            /*read in all frags from a file*/
 
-        /*read in all frags from a file*/
+            ArrayList<StoryFrag> allFrag = StoryFrag.getAllFrags();
 
-        ArrayList<StoryFrag> allFrag = StoryFrag.getAllFrags();
+            DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+            Date dayDate = new Date();
 
-        DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
-        Date dayDate = new Date();
+            Log.i("Main: ", "before tagging");
+            /*MUST ORGANIZE DAY EVENT BY START TIME*/
+            int eventSize = dayEvent.size();
 
-        Log.i("Main: ", "before tagging");
-        /*MUST ORGANIZE DAY EVENT BY START TIME*/
-        int eventSize = dayEvent.size();
-
-        if (eventSize == 0){
-            Log.i("Main: ", "Event size of 0 bc no calls lol");
-            Occasion testOcc = new Occasion();
-            testOcc.duration = 100;
-            testOcc.title = "call";
-            testOcc.service = "phonelog";
-            testOcc.desc = String.valueOf(2142406549);
-            ArrayList<String> guests = new ArrayList<String>();
-            guests.add("MEE");
-            testOcc.guests = guests;
-            dayEvent.add(testOcc);
-            Log.i("Main: ", "done with fake occasion");
-        }
-
-        eventSize = dayEvent.size();
-        Log.i("EVENT SIZE: ", String.valueOf(eventSize));
-        for (int i = 0; i < eventSize; i++){
-            Log.i("Main: ", "Event size >0 in for loop " + eventSize );
-            Occasion occ1 = dayEvent.get(i);
-            if (occ1.service == null){
-                Log.e("Tagging: ", "NULL OCCASION");
+            if (eventSize == 0) {
+                Log.i("Main: ", "Event size of 0 bc no calls lol");
+                Occasion testOcc = new Occasion();
+                testOcc.duration = 100;
+                testOcc.title = "call";
+                testOcc.service = "phonelog";
+                testOcc.desc = String.valueOf(2142406549);
+                ArrayList<String> guests = new ArrayList<String>();
+                guests.add("MEE");
+                testOcc.guests = guests;
+                dayEvent.add(testOcc);
+                Log.i("Main: ", "done with fake occasion");
             }
 
-            occ1 = tagOccasion(occ1);
-            Log.i("Tagging: ", occ1.tags.get(0));
-            StoryFrag frag = fragMatch(occ1,allFrag);
-            stories.add(frag);
+            eventSize = dayEvent.size();
+            Log.i("EVENT SIZE: ", String.valueOf(eventSize));
+            for (int i = 0; i < eventSize; i++) {
+                Log.i("Main: ", "Event size >0 in for loop " + eventSize);
+                Occasion occ1 = dayEvent.get(i);
+                if (occ1.service == null) {
+                    Log.e("Tagging: ", "NULL OCCASION");
+                }
+
+                occ1 = tagOccasion(occ1);
+                Log.i("Tagging: ", occ1.tags.get(0));
+                StoryFrag frag = fragMatch(occ1, allFrag);
+                stories.add(frag);
+            }
+
+            /*what is the replaceString array list? -- list of things we may have to replace in story
+            * frags*/
+
+            String[] replaceL = {"[GUEST]", "[TIME]", "[LOCATION]", "[NAME]", "[CALORIES]", "[ENDTIME]", "[DURATION]", "[MOVIE]", "[FOOD]", "[EVENT NAME]"};
+
+            ArrayList<String> replaceString = new ArrayList<String>();
+            replaceString.addAll(Arrays.asList(replaceL));
+
+            String storyWhole = storyTeller(stories, dayEvent, replaceString);
+            /*return adv to be stored in database?*/
+
+            Adventure adv = new Adventure(stories, dayEvent, dayDate);
+            adv.story = storyWhole;
+
+            actionDB.insertAdventure(adv);
+            Intent intent = new Intent(getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.MainActivity.class);
+            startActivity(intent);
+            Log.i("STORY whole:", adv.story);
+            return adv;
         }
-
-        /*what is the replaceString array list? -- list of things we may have to replace in story
-        * frags*/
-
-        String[] replaceL = {"[GUEST]","[TIME]","[LOCATION]","[NAME]", "[CALORIES]", "[ENDTIME]", "[DURATION]", "[MOVIE]", "[FOOD]", "[EVENT NAME]"};
-
-        ArrayList<String> replaceString = new ArrayList<String>();
-        replaceString.addAll(Arrays.asList(replaceL));
-
-        String storyWhole = storyTeller(stories,dayEvent,replaceString);
-        /*return adv to be stored in database?*/
-
-        Adventure adv = new Adventure(stories,dayEvent,dayDate);
-        adv.story = storyWhole;
-
-        actionDB.insertAdventure(adv);
-        Intent intent = new Intent(getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.MainActivity.class);
-        startActivity(intent);
-        Log.i("STORY whole:", adv.story);
-        return adv;
-
+    return new Adventure(new ArrayList<StoryFrag>(), new ArrayList<Occasion>(), new Date());
     }
 }
