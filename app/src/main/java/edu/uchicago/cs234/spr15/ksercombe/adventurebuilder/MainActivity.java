@@ -49,6 +49,7 @@ import retrofit.client.Response;
 public class MainActivity extends Activity {
 
     private static AccessToken fbAccessToken;
+    private static String fbUserId;
     private class BriteOrderInstance implements Callback<List<BriteOrder>> {
 
         @Override
@@ -140,14 +141,14 @@ public class MainActivity extends Activity {
 
         m_listview.setOnItemClickListener(new OnItemClickListener() {
 
-        public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-            int id_To_Search = arg2 + 1;
-            Bundle dataBundle = new Bundle();
-            dataBundle.putInt("id", id_To_Search);
-            Intent intent = new Intent(getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.DisplayAdventureActivity.class);
-            intent.putExtras(dataBundle);
-            startActivity(intent);
-        }
+            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+                int id_To_Search = arg2 + 1;
+                Bundle dataBundle = new Bundle();
+                dataBundle.putInt("id", id_To_Search);
+                Intent intent = new Intent(getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.DisplayAdventureActivity.class);
+                intent.putExtras(dataBundle);
+                startActivity(intent);
+            }
         });
     }
 
@@ -177,7 +178,25 @@ public class MainActivity extends Activity {
     //GENERATOR CODE
 
     private void addFacebookEvents() {
-        new GraphRequest(fbAccessToken, "/{user-id}/events", null, HttpMethod.GET, new GraphRequest.Callback() {
+        Log.i("FB: ", "In addFacebookEvents");
+
+        GraphRequest request = new GraphRequest(fbAccessToken, "/me", null, HttpMethod.GET, new GraphRequest.Callback(){
+            public void onCompleted(GraphResponse response){
+                JSONObject user = response.getJSONObject();
+                try {
+                    fbUserId = user.getString("id");
+                    Log.i("FB: ", "User id: " + fbUserId);
+                }
+                catch (JSONException m){
+                    Log.i("FB: ", "JSON failure");
+                }
+            }
+        });
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "id");
+        request.setParameters(parameters);
+        request.executeAsync();
+        new GraphRequest(fbAccessToken, "/" + fbUserId +"/events", null, HttpMethod.GET, new GraphRequest.Callback() {
             public void onCompleted(GraphResponse response) {
                 JSONObject vals = response.getJSONObject();
                 try {

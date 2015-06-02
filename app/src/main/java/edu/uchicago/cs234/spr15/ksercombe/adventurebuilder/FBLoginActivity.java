@@ -12,6 +12,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
 import com.facebook.FacebookSdk;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
 import com.facebook.login.widget.LoginButton;
 import com.facebook.CallbackManager;
 import com.facebook.login.LoginResult;
@@ -26,6 +29,9 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.Signature;
 import java.security.MessageDigest;
 import android.util.Base64;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class FBLoginActivity extends ActionBarActivity {
 
@@ -77,6 +83,7 @@ public class FBLoginActivity extends ActionBarActivity {
     public static class PlaceholderFragment extends Fragment {
         CallbackManager callbackManager;
         Context context;
+        private String fbUserId;
 
         public PlaceholderFragment(Context context1) {
             context = context1;
@@ -94,11 +101,13 @@ public class FBLoginActivity extends ActionBarActivity {
             LoginButton loginButton = (LoginButton) view.findViewById(R.id.login_button);
             loginButton.setReadPermissions("user_events");
             loginButton.setFragment(this);
+
             loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
                 @Override
                 public void onSuccess(LoginResult loginResult) {
                     Log.i("FB:", "SUCCESS");
-                    Generator.setAccessToken(loginResult.getAccessToken());
+                    MainActivity.setAccessToken(loginResult.getAccessToken());
+
                     Intent intent = new Intent(context.getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.MainActivity.class);
                     startActivity(intent);
                 }

@@ -47,6 +47,7 @@ import org.joda.time.DateTime;
 public class Generator {
 
     private static AccessToken fbAccessToken;
+    private static String fbUserId;
     private class BriteOrderInstance implements Callback<List<BriteOrder>>{
 
         @Override
@@ -82,7 +83,19 @@ public class Generator {
 
 
     private void addFacebookEvents() {
-        new GraphRequest(fbAccessToken, "/{user-id}/events", null, HttpMethod.GET, new GraphRequest.Callback() {
+        new GraphRequest(fbAccessToken, "/{user-id}", null, HttpMethod.GET, new GraphRequest.Callback(){
+            public void onCompleted(GraphResponse response){
+                JSONObject user = response.getJSONObject();
+                try {
+                    fbUserId = user.getString("id");
+                }
+                catch (JSONException m){
+                    Log.e ("FB: ", "Cant find user id");
+                }
+            }
+        }).executeAsync();
+        Log.i("FB: ", "Access Token: " + fbAccessToken);
+        new GraphRequest(fbAccessToken, "/"+fbUserId+ "/events", null, HttpMethod.GET, new GraphRequest.Callback() {
             public void onCompleted(GraphResponse response) {
                 JSONObject vals = response.getJSONObject();
                 try {
