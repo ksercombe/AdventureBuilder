@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.location.Location;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
@@ -42,6 +43,8 @@ import com.google.gson.internal.bind.DateTypeAdapter;
 import com.melnykov.fab.FloatingActionButton;
 
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -217,7 +220,45 @@ public class MainActivity extends Activity {
                         String attending = currEvent.getString("rsvp_status");
                         Log.i("FB: ", "Status: "+ attending);
                         if (attending.equals("attending")) {
-                            FBOccasion fb = new FBOccasion(currEvent);
+                            Occasion fb = new Occasion();
+                            DateTimeFormatter formatter;
+
+                            try {
+                                Log.i("FB: ", "Date: " + currEvent.get("start_time"));
+                                String sTime = currEvent.getString("start_time");
+                                String eTime = currEvent.getString("end_time");
+                                if(currEvent.getBoolean("is_date_only")) {
+                                    formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
+
+                                    fb.start.localDatetime = formatter.parseDateTime(sTime);
+                                    fb.end.localDatetime = formatter.parseDateTime(eTime);
+                                }
+                                else{
+                                    formatter = DateTimeFormat.forPattern("yyyy-MM-dd'HH:mm:ssZ");
+                                    fb.start.localDatetime = formatter.parseDateTime(sTime);
+                                    fb.end.localDatetime = formatter.parseDateTime(eTime);
+
+                                }
+                                fb.start.timezone = currEvent.getString("timezone");
+                                fb.end.timezone = currEvent.getString("timezone");
+                                Log.i("FB: ", "timezone: " + fb.end.timezone);
+                                fb.duration = (int) (fb.end.localDatetime.getMillis() - fb.start.localDatetime.getMillis());
+                                fb.service = "Facebook";
+                                fb.title = currEvent.getString("name");
+                                fb.desc = currEvent.getString("description");
+                                JSONObject p = currEvent.getJSONObject("place");
+                                fb.location = (Location)p.get("location");
+                                fb.calories = 0;
+
+                            }
+                            catch (JSONException m){
+                                Log.e("FB: ", "Error: " + m.getMessage());
+                                //do something
+                            }
+
+                            fb.guests = new ArrayList<String>();
+                            fb.tags = new ArrayList<String>();
+                            Log.i("FB testing: ", fb.desc + fb.service + fb.title + fb.duration);
                             //if (fb.start.localDatetime.getYear() == DateTime.now().getYear() && fb.start.localDatetime.getMonthOfYear() == DateTime.now().getMonthOfYear() && fb.start.localDatetime.getDayOfMonth() == DateTime.now().getDayOfMonth()) {
                                 dayEvent.add(fb);
                                 Log.i("FB: ", "Added Event!");
@@ -614,7 +655,7 @@ public class MainActivity extends Activity {
         eventSize = dayEvent.size();
         Log.i("EVENT SIZE: ", String.valueOf(eventSize));
         for (int i = 0; i < eventSize; i++){
-            Log.i("Main: ", "Event size >0 in for loop");
+            Log.i("Main: ", "Event size >0 in for loop " + eventSize );
             Occasion occ1 = dayEvent.get(i);
             if (occ1.service == null){
                 Log.e("Tagging: ", "NULL OCCASION");
@@ -639,6 +680,9 @@ public class MainActivity extends Activity {
 
         Adventure adv = new Adventure(stories,dayEvent,dayDate);
         adv.story = storyWhole;
+        actionDB.insertAdventure(adv);
+        Intent intent = new Intent(getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.MainActivity.class);
+        startActivity(intent);
         Log.i("STORY whole:", adv.story);
         return adv;
 
