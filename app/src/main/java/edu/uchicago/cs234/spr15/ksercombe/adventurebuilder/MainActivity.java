@@ -420,12 +420,12 @@ public class MainActivity extends ActionBarActivity {
      * account.
      */
     private void chooseAccount() {
-        Intent intent = AccountPicker.newChooseAccountIntent(null, null, new String[]{"com.google"},
-                false, null, null, null, null);
-        startActivityForResult(intent, REQUEST_ACCOUNT_PICKER);
+        //Intent intent = AccountPicker.newChooseAccountIntent(null, null, new String[]{"com.google"},
+         //       false, null, null, null, null);
+        //startActivityForResult(intent, REQUEST_ACCOUNT_PICKER);
         Log.d("CAl: ", "After start activity for Result");
-       // startActivityForResult(
-     //           credential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
+       startActivityForResult(
+                credential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
     }
 
     /**
@@ -951,15 +951,15 @@ public class MainActivity extends ActionBarActivity {
         }*/
 
         //addFacebookEvents();
-        refreshResults();
+        //refreshResults();
 
 
-        Log.i("ISFINISHED: ", "FALSE");
+        //Log.i("ISFINISHED: ", "FALSE");
 
 
-        //addFacebookEvents();
-        while(isFinished == true) {
-            Log.i("ISFINISHED: ", "TRUE");
+        addFacebookEvents();
+       // while(isFinished == true) {
+          //  Log.i("ISFINISHED: ", "TRUE");
             Log.i("Main: ", "After FB events");
             /*MUST RESOLVE CURRENT DATE/TIME*/
             addCallEvents(context);
@@ -1024,7 +1024,7 @@ public class MainActivity extends ActionBarActivity {
             startActivity(intent);
             Log.i("STORY whole:", adv.story);
             return adv;
-        }
-    return new Adventure(new ArrayList<StoryFrag>(), new ArrayList<Occasion>(), new Date());
+        //}
+    //return new Adventure(new ArrayList<StoryFrag>(), new ArrayList<Occasion>(), new Date());
     }
 }
