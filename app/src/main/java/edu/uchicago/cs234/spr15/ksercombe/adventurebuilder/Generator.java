@@ -89,16 +89,19 @@ public class Generator {
                     List<JSONObject> events = (List<JSONObject>) vals.get("data");
                     for (int i = 0; i < events.size(); i++) {
                         String attending = events.get(i).getString("rsvp_status");
+                        Log.i("FB: ", "Status: "+ attending);
                         if (attending.equals("Going")) {
                             FBOccasion fb = new FBOccasion(events.get(i));
                             if (fb.start.localDatetime.getYear() == DateTime.now().getYear() && fb.start.localDatetime.getMonthOfYear() == DateTime.now().getMonthOfYear() && fb.start.localDatetime.getDayOfMonth() == DateTime.now().getDayOfMonth()) {
                                 dayEvent.add(fb);
+                                Log.i("FB: ", "Added Event!");
                             }
                         }
                     }
                 }
                 catch(JSONException m){
                         //Fails to get
+                    Log.i("FB: ", "Fails to get events");
                 }
 
             }
@@ -107,9 +110,9 @@ public class Generator {
     }
 
     Context context;
-    private ArrayList<StoryFrag> stories;
-    private ArrayList<Integer> briteIds;
-    private ArrayList<Occasion> dayEvent;
+    private ArrayList<StoryFrag> stories = new ArrayList<StoryFrag>();
+    private ArrayList<Integer> briteIds = new ArrayList<Integer>();
+    private ArrayList<Occasion> dayEvent = new ArrayList<Occasion>();
 
     //rest adapter and retrofit data services
     private RestAdapter restAdapter;
@@ -136,7 +139,8 @@ public class Generator {
         return fbAccessToken;
     }
 
-    public void addCallEvents(){
+    public void addCallEvents(Context context1){
+        context = context1;
         /*IDK IF I"M DOING THIs RIGHT...*/
         //DateTime yr = DateTime.now().getYear();
         //DateTime mon = DateTime.now().getMonthOfYear();
@@ -148,7 +152,8 @@ public class Generator {
         String date = String.valueOf(yr)+String.valueOf(mon)+String.valueOf(day);
 
         String selection = CallLog.Calls.DATE + "=" + date;
-        Cursor managedCursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI,null,selection,null, null);
+        Cursor managedCursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI,null,null,null, null);
+ //       Log.i("CALLS:", managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.DATE)));
         while (managedCursor.moveToNext()){
             int dirCode = Integer.parseInt(managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.TYPE)));
 
@@ -160,6 +165,7 @@ public class Generator {
             }
 
             CallOccasion occ = new CallOccasion(managedCursor);
+            Log.i("CAllS: ", occ.service + occ.title + occ.desc);
             dayEvent.add(occ);
         }
     }
@@ -223,9 +229,10 @@ public class Generator {
         ArrayList<String> tags = new ArrayList<String>();
         String tag;
         String descTag;
-        String service = occ.getService().toLowerCase();
-        String title = occ.getTitle().toLowerCase();
-        String desc = occ.getDescription().toLowerCase();
+        Log.i("Tagging: ", occ.service );
+        String service = occ.service.toLowerCase();
+        String title = occ.title.toLowerCase();
+        String desc = occ.desc.toLowerCase();
 
         tag = ckTag(title);
         descTag = ckTag(desc);
@@ -393,14 +400,15 @@ public class Generator {
         return story;
     }
 
-    public Adventure buildAdventure() {
+    public Adventure buildAdventure(Context context1) {
+        context = context1;
         ArrayList<StoryFrag> stories = new ArrayList<StoryFrag>();
 
        // ArrayList<Occasion> dayEvent = new ArrayList<Occasion>();
         /*BUILD OCCASION LIST HERE*/
 
         //set up eventbrite REST adapter
-        restAdapter = new RestAdapter.Builder()
+        /*restAdapter = new RestAdapter.Builder()
                 .setEndpoint("https://www.eventbriteapi.com/v3")
                 .setErrorHandler(new MyErrorHandler())
                 .setLogLevel(RestAdapter.LogLevel.FULL)  // Do this for development too.
@@ -417,12 +425,12 @@ public class Generator {
             bService.getOrders(new BriteOrderInstance()); //if import is successful, then runs
     } catch (RetrofitError e) {                           //BriteOrderInstance.success method
             System.out.println(e.getResponse().getStatus());
-        }
+        }*/
 
         addFacebookEvents();
 
         /*MUST RESOLVE CURRENT DATE/TIME*/
-        addCallEvents();
+        addCallEvents(context);
 
         /*read in all frags from a file*/
 
@@ -458,9 +466,13 @@ public class Generator {
         /*MUST ORGANIZE DAY EVENT BY START TIME*/
         int eventSize = dayEvent.size();
         for (int i = 0; i < eventSize; i++){
-            Occasion occ = dayEvent.get(i);
-            occ = tagOccasion(occ);
-            StoryFrag frag = fragMatch(occ,allFrag);
+            Occasion occ1 = dayEvent.get(i);
+            if (occ1 == null){
+                Log.e("Tagging: ", "NULL OCCASION");
+            }
+            Log.i("Tagging: ", occ1.service);
+            occ1 = tagOccasion(occ1);
+            StoryFrag frag = fragMatch(occ1,allFrag);
             stories.add(frag);
         }
 

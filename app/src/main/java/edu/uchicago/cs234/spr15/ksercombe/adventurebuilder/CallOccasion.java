@@ -22,7 +22,7 @@ public class CallOccasion extends Occasion {
     ArrayList<String> tags;
 
     public CallOccasion(Cursor managedCursor) {
-        guests.add(managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.CACHED_NAME)));
+       // guests.add(managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.CACHED_NAME)));
         duration = managedCursor.getInt(managedCursor.getColumnIndex(CallLog.Calls.DURATION));
         service = "phonelog";
         title = "call";
