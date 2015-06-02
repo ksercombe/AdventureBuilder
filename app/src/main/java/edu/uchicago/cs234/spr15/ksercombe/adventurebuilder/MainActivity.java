@@ -1,5 +1,4 @@
 package edu.uchicago.cs234.spr15.ksercombe.adventurebuilder;
-import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -20,9 +19,7 @@ import android.accounts.AccountManager;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
+import android.support.v7.app.ActionBarActivity;
 import android.database.Cursor;
 import android.location.Location;
 import android.net.ConnectivityManager;
@@ -65,6 +62,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.internal.bind.DateTypeAdapter;
 import com.melnykov.fab.FloatingActionButton;
+import com.google.android.gms.common.AccountPicker;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -85,7 +83,7 @@ import android.os.StrictMode;
 import android.widget.Toast;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends ActionBarActivity {
     private static AccessToken fbAccessToken;
     private static String fbUserId;
     private class BriteOrderInstance implements Callback<List<BriteOrder>> {
@@ -133,7 +131,7 @@ public class MainActivity extends Activity {
     private static final int REQUEST_OAUTH = 1;
 
     private static final String AUTH_PENDING = "auth_state_pending";
-    private boolean aut4hInProgress = false;
+    private boolean authInProgress = false;
     private GoogleApiClient mClient = null;
 
     //FIT
@@ -320,6 +318,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(
             int requestCode, int resultCode, Intent data) {
+        Log.d("CAL: ", "On activity result");
         super.onActivityResult(requestCode, resultCode, data);
         switch(requestCode) {
             case REQUEST_GOOGLE_PLAY_SERVICES:
@@ -332,8 +331,8 @@ public class MainActivity extends Activity {
             case REQUEST_ACCOUNT_PICKER:
                 if (resultCode == RESULT_OK && data != null &&
                         data.getExtras() != null) {
-                    String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-                    Log.d("ACOUNT NAME",accountName);
+                    String accountName =
+                            data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
                     if (accountName != null) {
                         credential.setSelectedAccountName(accountName);
                         SharedPreferences settings =
@@ -369,13 +368,14 @@ public class MainActivity extends Activity {
         Log.d("AdventureBuilderDebug","results refreshed!");
         if (credential.getSelectedAccountName() == null) {
             Log.d("AdventureBuilderDebug","SELECTEd ACCOUNT IS NULL!");
+            Log.d("Cal: ", "choosing account");
             chooseAccount();
         } else {
             Log.d("AdventureBuilderDebug","account selected");
             if (isDeviceOnline()) {
                 Log.d("AdventureBuilderDebug","apiasynctask started");
                 new ApiAsyncTask(this).execute();
-                Log.d("AdventureBuilderDebug","apiasynch finished");
+
 //                // List the last 10 events from the primary calendar?
 //                com.google.api.client.util.DateTime now = new com.google.api.client.util.DateTime(System.currentTimeMillis());
 //                List<String> eventStrings = new ArrayList<String>();
@@ -416,10 +416,12 @@ public class MainActivity extends Activity {
      * account.
      */
     private void chooseAccount() {
-        Log.d("CHOOSE ACCOUNT","entered");
-        startActivityForResult(
-                credential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
-
+        Intent intent = AccountPicker.newChooseAccountIntent(null, null, new String[]{"com.google"},
+                false, null, null, null, null);
+        startActivityForResult(intent, REQUEST_ACCOUNT_PICKER);
+        Log.d("CAl: ", "After start activity for Result");
+       // startActivityForResult(
+     //           credential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
     }
 
     /**
@@ -490,9 +492,7 @@ public class MainActivity extends Activity {
 //    }
     //FIT
 
-
-
-
+    //GENERATOR CODE
 
     private void addFacebookEvents() {
         Log.i("FB: ", "In addFacebookEvents");
@@ -847,7 +847,7 @@ public class MainActivity extends Activity {
 
                         break;
                     case "[DURATION]":
-                        replacer = String.valueOf(currOcc.getDuration());
+                        replacer = String.valueOf(currOcc.getDuration()) + " second";
                         break;
                     case "[LOCATION]":
                         if (currOcc.location == null){
@@ -908,7 +908,7 @@ public class MainActivity extends Activity {
                 Log.i("Replacing: ", replacer);
                 currReplace = currReplace.replace("[", "\\[").replace("]", "\\]");
                 Log.i("Replacing: ", currReplace);
-                actualFrag = actualFrag.replaceAll(currReplace, replacer);
+                actualFrag = actualFrag.replaceAll(currReplace , replacer);
                 Log.i("STORY REPLACE:", actualFrag);
             }
             story = story+" "+actualFrag;
