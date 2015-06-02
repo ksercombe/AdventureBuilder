@@ -148,7 +148,7 @@ public class MainActivity extends Activity {
             authInProgress = savedInstanceState.getBoolean(AUTH_PENDING);
         }
 
-        buildFitnessClient();
+        //buildFitnessClient();
         //FIT
 
         actionDB = new DBHelper(this);
@@ -208,11 +208,11 @@ public class MainActivity extends Activity {
     }
 
     //FIT
-    private void buildFitnessClient(){
+    /*private void buildFitnessClient(){
         mClient = new GoogleApiClient.Builder(this).addApi(
         ).addScope.addConnectionCallbacks().addOnConnectionFailedListener().build();
 
-    }
+    }*/
     //FIT
 
     //GENERATOR CODE
