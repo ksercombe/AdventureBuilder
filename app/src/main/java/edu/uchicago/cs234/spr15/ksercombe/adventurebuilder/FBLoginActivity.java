@@ -115,7 +115,7 @@ public class FBLoginActivity extends ActionBarActivity {
                 @Override
                 public void onCancel() {
                     Log.i("FB:", "CANCEL");
-                    Generator.setAccessToken(null);  //User does not allow access
+                    MainActivity.setAccessToken(null);  //User does not allow access
                     Intent intent = new Intent(context.getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.MainActivity.class);
                     startActivity(intent);
                 }
