@@ -61,7 +61,7 @@ public class DBHelper extends SQLiteOpenHelper {
         Cursor res =  db.rawQuery( "select * from " + ADVENTURE_TABLE_NAME, null );
         res.moveToFirst();
         while(res.isAfterLast() == false){
-            array_list.add(res.getString(res.getColumnIndex(ADVENTURE_COLUMN_STORY)));
+            array_list.add(res.getString(res.getColumnIndex(ADVENTURE_COLUMN_DATE)));
             res.moveToNext();
         }
         return array_list;
