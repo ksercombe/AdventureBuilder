@@ -46,6 +46,8 @@ import com.melnykov.fab.FloatingActionButton;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.joda.time.DateTimeZone;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -248,34 +250,43 @@ public class MainActivity extends Activity {
                         Log.i("FB: ", "Status: "+ attending);
                         if (attending.equals("attending")) {
                             Occasion fb = new Occasion();
+                            fb.desc = "";
+                            fb.title = "";
+                            fb.service = "Facebook";
+                            fb.calories = 0;
+                            fb.start = new EventTime();
+                            fb.end = new EventTime();
+                            fb.start.localDatetime = new DateTime(2000,1,1,12,0);
+                            fb.end.localDatetime = new DateTime(2000,1,1,12,0);
+
                             DateTimeFormatter formatter;
 
                             try {
                                 Log.i("FB: ", "Date: " + currEvent.get("start_time"));
                                 String sTime = currEvent.getString("start_time");
                                 String eTime = currEvent.getString("end_time");
-                                if(currEvent.getBoolean("is_date_only")) {
-                                    formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
+                                //formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
+                                sTime = sTime.substring(0, sTime.length() - 5);
+                                eTime = sTime.substring(0, eTime.length() - 5);
+                                sTime = sTime + ".000Z";
+                                eTime = eTime + ".000Z";
 
-                                    fb.start.localDatetime = formatter.parseDateTime(sTime);
-                                    fb.end.localDatetime = formatter.parseDateTime(eTime);
-                                }
-                                else{
-                                    formatter = DateTimeFormat.forPattern("yyyy-MM-dd'HH:mm:ssZ");
-                                    fb.start.localDatetime = formatter.parseDateTime(sTime);
-                                    fb.end.localDatetime = formatter.parseDateTime(eTime);
+                                fb.start.localDatetime = ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC).parseDateTime(sTime);
+                                fb.end.localDatetime = ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC).parseDateTime(eTime);
+                                //    fb.start.localDatetime = formatter.parseDateTime(sTime);
+                                //    fb.end.localDatetime = formatter.parseDateTime(eTime);
 
-                                }
+
                                 fb.start.timezone = currEvent.getString("timezone");
                                 fb.end.timezone = currEvent.getString("timezone");
                                 Log.i("FB: ", "timezone: " + fb.end.timezone);
                                 fb.duration = (int) (fb.end.localDatetime.getMillis() - fb.start.localDatetime.getMillis());
-                                fb.service = "Facebook";
+
                                 fb.title = currEvent.getString("name");
                                 fb.desc = currEvent.getString("description");
                                 JSONObject p = currEvent.getJSONObject("place");
                                 fb.location = (Location)p.get("location");
-                                fb.calories = 0;
+
 
                             }
                             catch (JSONException m){
@@ -547,7 +558,7 @@ public class MainActivity extends Activity {
                         replacer = context.getString(R.string.you);
                         break;
                     case "[GUEST]":
-                        if (currOcc.guests == null){
+                        if (currOcc.guests.size() == 0){
                             replacer = "no new friends";
                         }
                         else {
@@ -586,7 +597,8 @@ public class MainActivity extends Activity {
                             replacer = "5 pm";
                         }
                         else {
-                            replacer = new SimpleDateFormat("HH:mm").format(currOcc.end.localDatetime);
+                            DateTimeFormatter formatter = DateTimeFormat.forPattern("HH:mm");
+                            replacer = formatter.print(currOcc.end.localDatetime);
                         }
                         break;
 
@@ -608,11 +620,21 @@ public class MainActivity extends Activity {
                             replacer = currOcc.getTitle();
                         }
                         break;
+                    case "[EVENT]":
+                        if (currOcc.title == null){
+                            replacer = "secret title";
+                        }
+                        else {
+                            replacer = currOcc.getTitle();
+                        }
+                        break;
                     default:
                         break;
                 }
-                actualFrag = actualFrag.replaceAll(currReplace.replace("[","").replace("]",""), replacer);
-                actualFrag = actualFrag.replace("[","").replace("]","");
+                Log.i("Replacing: ", replacer);
+                currReplace = currReplace.replace("[", "\\[").replace("]", "\\]");
+                Log.i("Replacing: ", currReplace);
+                actualFrag = actualFrag.replaceAll(currReplace , replacer);
                 Log.i("STORY REPLACE:", actualFrag);
             }
             story = story+" "+actualFrag;
@@ -650,7 +672,7 @@ public class MainActivity extends Activity {
             System.out.println(e.getResponse().getStatus());
         }*/
 
-        //addFacebookEvents();
+        addFacebookEvents();
 
         Log.i("Main: ", "After FB events");
         /*MUST RESOLVE CURRENT DATE/TIME*/
