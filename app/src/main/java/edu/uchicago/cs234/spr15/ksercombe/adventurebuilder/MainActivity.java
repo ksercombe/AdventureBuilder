@@ -953,9 +953,9 @@ public class MainActivity extends ActionBarActivity {
         //addFacebookEvents();
         refreshResults();
 
-        while(isFinished == false){
-            Log.i("ISFINISHED: ", "FALSE");
-        }
+
+        Log.i("ISFINISHED: ", "FALSE");
+
 
         //addFacebookEvents();
         while(isFinished == true) {

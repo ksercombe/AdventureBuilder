@@ -4,4 +4,5 @@
     tools:context="edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.DisplayAdventure">
     <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="100" app:showAsAction="never" />
+
 </menu>
