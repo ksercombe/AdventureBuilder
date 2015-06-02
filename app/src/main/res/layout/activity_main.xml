@@ -18,14 +18,14 @@
 
         <com.melnykov.fab.FloatingActionButton
             android:id="@+id/fab"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_width="36dp"
+            android:layout_height="41dp"
             android:layout_gravity="bottom|right"
             android:layout_margin="16dp"
             android:src="@drawable/ic_plus"
             fab:fab_colorNormal="@color/fab_color_primary"
-            fab:fab_colorPressed="@color/fab_color_ripple"
-            fab:fab_colorRipple="@color/fab_shadow"
+            fab:fab_colorPressed="@color/fab_shadow"
+            fab:fab_colorRipple="@color/fab_color_ripple"
             android:clickable="false"
             android:nestedScrollingEnabled="false" />
 

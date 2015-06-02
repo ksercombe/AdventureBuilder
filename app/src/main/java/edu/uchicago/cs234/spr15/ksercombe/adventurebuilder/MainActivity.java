@@ -1,4 +1,8 @@
 package edu.uchicago.cs234.spr15.ksercombe.adventurebuilder;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -6,6 +10,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.regex.Pattern;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -136,7 +141,8 @@ public class MainActivity extends Activity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                buildAdventure(getApplicationContext());
+                Adventure adv = buildAdventure(getApplicationContext());
+                Log.i("STORY whole:", "PROPERLY RETURN "+adv.story);
             }
         });
 
@@ -257,7 +263,15 @@ public class MainActivity extends Activity {
                     break;
             }
 
-            CallOccasion occ = new CallOccasion(managedCursor);
+            //CallOccasion occ = new CallOccasion(managedCursor);
+            Occasion occ = new Occasion();
+            occ.duration = managedCursor.getInt(managedCursor.getColumnIndex(CallLog.Calls.DURATION));
+            occ.service = "phonelog";
+            occ.title = "call";
+            occ.desc = managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.NUMBER));
+            occ.guests = new ArrayList<String>();
+            occ.guests.add(managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.CACHED_NAME)));
+
             Log.i("CAllS: ", occ.service + occ.title + occ.desc);
             dayEvent.add(occ);
         }
@@ -319,6 +333,7 @@ public class MainActivity extends Activity {
     }
 
     public static Occasion tagOccasion(Occasion occ) {
+        Log.i("Tagging: ", "IN TAG OCCASION");
         ArrayList<String> tags = new ArrayList<String>();
         String tag;
         String descTag;
@@ -387,6 +402,7 @@ public class MainActivity extends Activity {
         ArrayList<StoryFrag> fragOptions = new ArrayList<StoryFrag>();
         int numOccTags = occTags.size();
         int numAllFrags = allFrags.size();
+        Log.i("FragMatch: ", String.valueOf(numAllFrags));
         for (int i = 0; i < numAllFrags; i++) {
             StoryFrag currFrag = allFrags.get(i);
             int numTags = currFrag.tags.size();
@@ -401,6 +417,10 @@ public class MainActivity extends Activity {
         }
 
         int numFragOptions = fragOptions.size();
+        if (numFragOptions == 0){
+            numFragOptions = 1;
+            Log.i("FragMatch: ", "frag options is 0 bc not reading in file?");
+        }
         int chosen = rand.nextInt(numFragOptions);
         return fragOptions.get(chosen);
 
@@ -432,23 +452,29 @@ public class MainActivity extends Activity {
         for (int i = 0; i < numFrags; i++) {
             StoryFrag currFrag = frags.get(i);
             String actualFrag = currFrag.frag;
+            Log.i("STORY FRAG FOR REPLACE:", actualFrag);
             Occasion currOcc = occasions.get(i);
             for (int j = 0; j < numReplace; j++) {
                 String currReplace = replaceStrings.get(j);
                 replacer = "";
                 switch(currReplace) {
                     case "[NAME]":
+                        //replacer = "me";
                         replacer = context.getString(R.string.you);
                         break;
                     case "[GUEST]":
-                        ArrayList<String> guestList = currOcc.getGuests();
-                        int len = guestList.size();
-                        if (len > 3) {
-                            replacer = context.getString(R.string.friends);
+                        if (currOcc.guests == null){
+                            replacer = "no new friends";
                         }
-                        else{
-                            for (int k = 0; k < len; k++) {
-                                replacer.concat(guestList.get(k));
+                        else {
+                            ArrayList<String> guestList = currOcc.guests;
+                            int len = guestList.size();
+                            if (len > 3) {
+                                replacer = context.getString(R.string.friends);
+                            } else {
+                                for (int k = 0; k < len; k++) {
+                                    replacer.concat(guestList.get(k));
+                                }
                             }
                         }
                         break;
@@ -456,7 +482,13 @@ public class MainActivity extends Activity {
                         replacer = String.valueOf(currOcc.getDuration());
                         break;
                     case "[LOCATION]":
-                        replacer = currOcc.getLocation().toString();
+                        if (currOcc.location == null){
+                            replacer = "a secret location";
+                            continue;
+                        }
+                        else {
+                            replacer = currOcc.getLocation().toString();
+                        }
                         break;
                     case "[CALORIES]":
                         if (currOcc.calories != 0) {
@@ -467,8 +499,14 @@ public class MainActivity extends Activity {
                         }
                         break;
                     case "[ENDTIME]":
-                        replacer = new SimpleDateFormat("HH:mm").format(currOcc.end.localDatetime);
+                        if (currOcc.end == null){
+                            replacer = "5 pm";
+                        }
+                        else {
+                            replacer = new SimpleDateFormat("HH:mm").format(currOcc.end.localDatetime);
+                        }
                         break;
+
                     case "[MOVIE]":
                         int lenMovies = movies.size();
                         int index = rand.nextInt(lenMovies);
@@ -480,16 +518,25 @@ public class MainActivity extends Activity {
                         replacer = food.get(foodInd);
                         break;
                     case "[EVENT NAME]":
-                        replacer = currOcc.getTitle();
+                        if (currOcc.title == null){
+                            replacer = "secret title";
+                        }
+                        else {
+                            replacer = currOcc.getTitle();
+                        }
                         break;
                     default:
                         break;
                 }
                 actualFrag = actualFrag.replaceAll(currReplace.replace("[","").replace("]",""), replacer);
                 actualFrag = actualFrag.replace("[","").replace("]","");
+                Log.i("STORY REPLACE:", actualFrag);
             }
             story = story+" "+actualFrag;
         }
+        Log.i("STORY REPLACE:", "returning the replaced story");
+        Log.i("STORY REPLACE:", story);
+
         return story;
     }
 
@@ -520,7 +567,7 @@ public class MainActivity extends Activity {
             System.out.println(e.getResponse().getStatus());
         }*/
 
-        addFacebookEvents();
+        //addFacebookEvents();
 
         Log.i("Main: ", "After FB events");
         /*MUST RESOLVE CURRENT DATE/TIME*/
@@ -530,30 +577,6 @@ public class MainActivity extends Activity {
         /*read in all frags from a file*/
 
         ArrayList<StoryFrag> allFrag = StoryFrag.getAllFrags();
-        //String filename = "stories.txt";
-        //String line = null;
-           /*
-        try{
-            FileReader fileReader = new FileReader(filename);
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
-            not sure how to fully initialize frags; what is sent fill and will
-            n persons and location be provided in file or must we search
-
-            while((line = bufferedReader.readLine()) != null){
-
-                StoryFrag initFrag = new StoryFrag(line,);
-                allFrag.add(initFrag);
-            }
-
-            bufferedReader.close();
-        }
-        catch(FileNotFoundException ex){
-            System.out.println("file not found\n");
-        }
-        catch (IOException ex){
-            System.out.println("IO exception\n");
-        }
-        */
 
         DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
         Date dayDate = new Date();
@@ -561,13 +584,31 @@ public class MainActivity extends Activity {
         Log.i("Main: ", "before tagging");
         /*MUST ORGANIZE DAY EVENT BY START TIME*/
         int eventSize = dayEvent.size();
+
+        if (eventSize == 0){
+            Log.i("Main: ", "Event size of 0 bc no calls lol");
+            Occasion testOcc = new Occasion();
+            testOcc.duration = 100;
+            testOcc.title = "call";
+            testOcc.service = "phonelog";
+            testOcc.desc = String.valueOf(2142406549);
+            testOcc.guests = new ArrayList<String>();
+            testOcc.guests.add("MEE");
+            dayEvent.add(testOcc);
+            Log.i("Main: ", "done with fake occasion");
+        }
+
+        eventSize = dayEvent.size();
+
         for (int i = 0; i < eventSize; i++){
+            Log.i("Main: ", "Event size >0 in for loop");
             Occasion occ1 = dayEvent.get(i);
-            if (occ1 == null){
+            if (occ1.service == null){
                 Log.e("Tagging: ", "NULL OCCASION");
             }
-            Log.i("Tagging: ", occ1.service);
+
             occ1 = tagOccasion(occ1);
+            Log.i("Tagging: ", occ1.tags.get(0));
             StoryFrag frag = fragMatch(occ1,allFrag);
             stories.add(frag);
         }
@@ -585,7 +626,7 @@ public class MainActivity extends Activity {
 
         Adventure adv = new Adventure(stories,dayEvent,dayDate);
         adv.story = storyWhole;
-
+        Log.i("STORY whole:", adv.story);
         return adv;
 
     }

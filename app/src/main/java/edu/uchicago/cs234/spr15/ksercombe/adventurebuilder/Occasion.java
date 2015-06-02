@@ -41,7 +41,12 @@ public class Occasion {
     public DateTime getDate() { return start.localDatetime;}
 
     public long getDuration() { //Returns duration in minutes
-        return TimeUnit.MILLISECONDS.toMinutes(end.localDatetime.getMillis() - start.localDatetime.getMillis());
+        if (duration!=0){
+            return duration;
+        }
+        else {
+            return TimeUnit.MILLISECONDS.toMinutes(end.localDatetime.getMillis() - start.localDatetime.getMillis());
+        }
     }
 
     public ArrayList<String> getGuests() {
