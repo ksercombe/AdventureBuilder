@@ -222,13 +222,13 @@ public class MainActivity extends Activity {
                     //Fails to get
                     Log.i("FB: ", "Fails to get events");
                 }
-
             }
+
         });
         Bundle parameters2 = new Bundle();
         parameters.putString("fields", "data");
         request2.setParameters(parameters2);
-        request2.executeAsync();
+        request2.executeAndWait();
 
     }
 
