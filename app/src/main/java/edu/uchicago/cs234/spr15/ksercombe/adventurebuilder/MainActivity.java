@@ -133,7 +133,7 @@ public class MainActivity extends Activity {
     private static final int REQUEST_OAUTH = 1;
 
     private static final String AUTH_PENDING = "auth_state_pending";
-    private boolean authInProgress = false;
+    private boolean aut4hInProgress = false;
     private GoogleApiClient mClient = null;
 
     //FIT
@@ -216,9 +216,9 @@ public class MainActivity extends Activity {
             .build();
 
         //FIT
-        if (savedInstanceState != null) {
+        /*if (savedInstanceState != null) {
             authInProgress = savedInstanceState.getBoolean(AUTH_PENDING);
-        }
+        }*/
 
         //buildFitnessClient();
         //FIT
@@ -332,8 +332,8 @@ public class MainActivity extends Activity {
             case REQUEST_ACCOUNT_PICKER:
                 if (resultCode == RESULT_OK && data != null &&
                         data.getExtras() != null) {
-                    String accountName =
-                            data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+                    String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+                    Log.d("ACOUNT NAME",accountName);
                     if (accountName != null) {
                         credential.setSelectedAccountName(accountName);
                         SharedPreferences settings =
@@ -368,13 +368,14 @@ public class MainActivity extends Activity {
     private void refreshResults() {
         Log.d("AdventureBuilderDebug","results refreshed!");
         if (credential.getSelectedAccountName() == null) {
+            Log.d("AdventureBuilderDebug","SELECTEd ACCOUNT IS NULL!");
             chooseAccount();
         } else {
             Log.d("AdventureBuilderDebug","account selected");
             if (isDeviceOnline()) {
                 Log.d("AdventureBuilderDebug","apiasynctask started");
                 new ApiAsyncTask(this).execute();
-
+                Log.d("AdventureBuilderDebug","apiasynch finished");
 //                // List the last 10 events from the primary calendar?
 //                com.google.api.client.util.DateTime now = new com.google.api.client.util.DateTime(System.currentTimeMillis());
 //                List<String> eventStrings = new ArrayList<String>();
@@ -403,6 +404,7 @@ public class MainActivity extends Activity {
 //                }
 ////                calStrings.addAll(eventStrings);
             } else {
+                Log.d("AdventureBuilderDebug","Divice is not online!");
                 Toast toast = Toast.makeText(getApplicationContext(), "No network connection available", Toast.LENGTH_SHORT);
                 toast.show();
             }
@@ -414,8 +416,10 @@ public class MainActivity extends Activity {
      * account.
      */
     private void chooseAccount() {
+        Log.d("CHOOSE ACCOUNT","entered");
         startActivityForResult(
                 credential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
+
     }
 
     /**
@@ -942,7 +946,7 @@ public class MainActivity extends Activity {
             System.out.println(e.getResponse().getStatus());
         }*/
 
-        addFacebookEvents();
+        //addFacebookEvents();
         refreshResults();
 
 
