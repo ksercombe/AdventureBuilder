@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.DateFormat;
+import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -240,40 +241,47 @@ public class MainActivity extends Activity {
 
     public void addCallEvents(Context context1){
         context = context1;
-        /*IDK IF I"M DOING THIs RIGHT...*/
-        //DateTime yr = DateTime.now().getYear();
-        //DateTime mon = DateTime.now().getMonthOfYear();
-        //DateTime day = DateTime.now().getDayOfMonth();
-        int yr = 2015;
-        int mon = 06;
-        int day = 01;
+        Format formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date tDate = new Date();
+        String todayDate = formatter.format(tDate);
+        todayDate = todayDate.split(" ")[0];
 
-        String date = String.valueOf(yr)+String.valueOf(mon)+String.valueOf(day);
+        //Date cDate = new Date(Long.parseLong(CallLog.Calls.DATE) * 1000);
+        //String callDate = formatter.format(cDate);
+        //callDate = callDate.split(" ")[0];
+        //String selection = callDate + "=" + todayDate;
 
-        String selection = CallLog.Calls.DATE + "=" + date;
         Cursor managedCursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI,null,null,null, null);
         //       Log.i("CALLS:", managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.DATE)));
         while (managedCursor.moveToNext()){
-            int dirCode = Integer.parseInt(managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.TYPE)));
+            Date cDate = new Date(managedCursor.getLong(managedCursor.getColumnIndex(CallLog.Calls.DATE)) * 1000);
+            String callDate = formatter.format(cDate);
+            callDate = callDate.split(" ")[0];
+            if (callDate.equals(todayDate)) {
+                int dirCode = Integer.parseInt(managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.TYPE)));
 
-            switch (dirCode){
-                case CallLog.Calls.MISSED_TYPE:
-                    continue;
-                default:
-                    break;
+                switch (dirCode) {
+                    case CallLog.Calls.MISSED_TYPE:
+                        continue;
+                    default:
+                        break;
+                }
+
+                //CallOccasion occ = new CallOccasion(managedCursor);
+                Occasion occ = new Occasion();
+                occ.duration = managedCursor.getInt(managedCursor.getColumnIndex(CallLog.Calls.DURATION));
+                occ.service = "phonelog";
+                occ.title = "call";
+                occ.desc = managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.NUMBER));
+                occ.guests = new ArrayList<String>();
+                if ((managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.CACHED_NAME))) == null) {
+                    occ.guests.add("someone you don't know");
+                } else {
+                    occ.guests.add(managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.CACHED_NAME)));
+                }
+                Log.i("CAllS: ", occ.service + occ.title + occ.desc);
+                dayEvent.add(occ);
             }
-
-            //CallOccasion occ = new CallOccasion(managedCursor);
-            Occasion occ = new Occasion();
-            occ.duration = managedCursor.getInt(managedCursor.getColumnIndex(CallLog.Calls.DURATION));
-            occ.service = "phonelog";
-            occ.title = "call";
-            occ.desc = managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.NUMBER));
-            occ.guests = new ArrayList<String>();
-            occ.guests.add(managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.CACHED_NAME)));
-
-            Log.i("CAllS: ", occ.service + occ.title + occ.desc);
-            dayEvent.add(occ);
         }
     }
 
@@ -449,11 +457,16 @@ public class MainActivity extends Activity {
         food.add("chocolate chips");
         food.add("macaroni and cheese");
         food.add("puppy chow");
+
         for (int i = 0; i < numFrags; i++) {
             StoryFrag currFrag = frags.get(i);
             String actualFrag = currFrag.frag;
             Log.i("STORY FRAG FOR REPLACE:", actualFrag);
             Occasion currOcc = occasions.get(i);
+            Log.i("STORY REPLACE:", "Guests"+String.valueOf(currOcc.guests.size()));
+            if (currOcc.guests.size()>0){
+                Log.i("STORY REPLACE:", String.valueOf(currOcc.guests.get(0)));
+            }
             for (int j = 0; j < numReplace; j++) {
                 String currReplace = replaceStrings.get(j);
                 replacer = "";
@@ -468,15 +481,14 @@ public class MainActivity extends Activity {
                         }
                         else {
                             ArrayList<String> guestList = currOcc.guests;
-                            int len = guestList.size();
-                            if (len > 3) {
-                                replacer = context.getString(R.string.friends);
-                            } else {
-                                for (int k = 0; k < len; k++) {
-                                    replacer.concat(guestList.get(k));
+                            int len = currOcc.guests.size();
+                            if (len > 0){
+                                for (int y = 0;y<len;y++){
+                                    replacer = replacer.concat(guestList.get(y));
                                 }
                             }
                         }
+
                         break;
                     case "[DURATION]":
                         replacer = String.valueOf(currOcc.getDuration());
@@ -592,14 +604,15 @@ public class MainActivity extends Activity {
             testOcc.title = "call";
             testOcc.service = "phonelog";
             testOcc.desc = String.valueOf(2142406549);
-            testOcc.guests = new ArrayList<String>();
-            testOcc.guests.add("MEE");
+            ArrayList<String> guests = new ArrayList<String>();
+            guests.add("MEE");
+            testOcc.guests = guests;
             dayEvent.add(testOcc);
             Log.i("Main: ", "done with fake occasion");
         }
 
         eventSize = dayEvent.size();
-
+        Log.i("EVENT SIZE: ", String.valueOf(eventSize));
         for (int i = 0; i < eventSize; i++){
             Log.i("Main: ", "Event size >0 in for loop");
             Occasion occ1 = dayEvent.get(i);
