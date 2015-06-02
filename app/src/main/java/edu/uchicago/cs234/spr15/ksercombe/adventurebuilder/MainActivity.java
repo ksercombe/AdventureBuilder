@@ -297,10 +297,10 @@ public class MainActivity extends Activity {
                             fb.guests = new ArrayList<String>();
                             fb.tags = new ArrayList<String>();
                             Log.i("FB testing: ", fb.desc + fb.service + fb.title + fb.duration);
-                            //if (fb.start.localDatetime.getYear() == DateTime.now().getYear() && fb.start.localDatetime.getMonthOfYear() == DateTime.now().getMonthOfYear() && fb.start.localDatetime.getDayOfMonth() == DateTime.now().getDayOfMonth()) {
+                            if (fb.start.localDatetime.getYear() == DateTime.now().getYear() && fb.start.localDatetime.getMonthOfYear() == DateTime.now().getMonthOfYear() && fb.start.localDatetime.getDayOfMonth() == DateTime.now().getDayOfMonth()) {
                                 dayEvent.add(fb);
                                 Log.i("FB: ", "Added Event!");
-                            //}
+                            }
                         }
                     }
                 }
@@ -333,10 +333,9 @@ public class MainActivity extends Activity {
         Cursor managedCursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI,null,null,null, null);
         //       Log.i("CALLS:", managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.DATE)));
         while (managedCursor.moveToNext()){
-            Date cDate = new Date(managedCursor.getLong(managedCursor.getColumnIndex(CallLog.Calls.DATE)) * 1000);
-            String callDate = formatter.format(cDate);
-            callDate = callDate.split(" ")[0];
-            if (callDate.equals(todayDate)) {
+            DateTime cDate = new DateTime(managedCursor.getLong(managedCursor.getColumnIndex(CallLog.Calls.DATE)));
+
+            if (cDate.getYear() == DateTime.now().getYear() && cDate.getMonthOfYear() == DateTime.now().getMonthOfYear() && cDate.getDayOfMonth() == DateTime.now().getDayOfMonth()) {
                 int dirCode = Integer.parseInt(managedCursor.getString(managedCursor.getColumnIndex(CallLog.Calls.TYPE)));
 
                 switch (dirCode) {
