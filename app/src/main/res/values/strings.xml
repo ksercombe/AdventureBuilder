@@ -13,4 +13,10 @@
     <string name="title_activity_fblogin">FBLoginActivity</string>
 
     <string name="facebook_app_id">669814646455720</string>
+
+    <string name="google_client_secret">J6gVXv83c2szCPHxfE0HXJtn</string>
+    <string name="google_client_id">574222668686-jtb5t9rrn9h776a25amokj05504q5h0e.apps.googleusercontent.com</string>
+    <string name="title_activity_google_login">GoogleLoginActivity</string>
+
+    <string name="google_login">Login</string>
 </resources>

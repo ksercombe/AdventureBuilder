@@ -19,7 +19,7 @@ import android.accounts.AccountManager;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.database.Cursor;
 import android.location.Location;
 import android.net.ConnectivityManager;
@@ -48,9 +48,13 @@ import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.api.services.plus.Plus;
+import com.google.api.services.plus.Plus.Builder;
 import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.ExponentialBackOff;
@@ -63,6 +67,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.internal.bind.DateTypeAdapter;
 import com.melnykov.fab.FloatingActionButton;
 import com.google.android.gms.common.AccountPicker;
+import com.squareup.okhttp.OkHttpClient;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -75,17 +80,24 @@ import org.json.JSONArray;
 
 import retrofit.Callback;
 import retrofit.ErrorHandler;
+import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
+import retrofit.client.OkClient;
 import retrofit.client.Response;
 
 import android.os.StrictMode;
 import android.widget.Toast;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends AppCompatActivity {
     private static AccessToken fbAccessToken;
     private static String fbUserId;
+    private static String gAccessToken;
+    private static String gAccountName;
+
+
+
     private class BriteOrderInstance implements Callback<List<BriteOrder>> {
 
         @Override
@@ -163,6 +175,17 @@ public class MainActivity extends ActionBarActivity {
     public static AccessToken getAccessToken(){
         return fbAccessToken;
     }
+    public static void setGAccessToken(String s){
+        gAccessToken = s;
+    }
+    public static String getGAccessToken(){return gAccessToken;}
+    public static void setGAccountName(String name){
+        gAccountName = name;
+    }
+    public static String getGAccountName(){
+        return gAccountName;
+    }
+
 
     /**
       * A Google Calendar API service object used to access the API.
@@ -171,7 +194,7 @@ public class MainActivity extends ActionBarActivity {
       */
         com.google.api.services.calendar.Calendar mService;
 
-    GoogleAccountCredential credential;
+    GoogleCredential credential;
     final HttpTransport transport = AndroidHttp.newCompatibleTransport();
     final JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
 
@@ -205,10 +228,10 @@ public class MainActivity extends ActionBarActivity {
         //CALENDAR
         // Initialize credentials and service object.
         SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
-        credential = GoogleAccountCredential.usingOAuth2(
-            getApplicationContext(), Arrays.asList(SCOPES))
-            .setBackOff(new ExponentialBackOff())
-            .setSelectedAccountName(settings.getString(PREF_ACCOUNT_NAME, null));
+        credential = new GoogleCredential().setAccessToken(gAccessToken);
+        Plus plus = new Plus.Builder(new NetHttpTransport(), jsonFactory, credential)
+                .setApplicationName("AdventureBuilder")
+                .build();
 
         mService = new com.google.api.services.calendar.Calendar.Builder(
             transport, jsonFactory, credential)
@@ -295,17 +318,17 @@ public class MainActivity extends ActionBarActivity {
 //     * Called whenever this activity is pushed to the foreground, such as after
 //     * a call to onCreate().
 //     */
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        if (isGooglePlayServicesAvailable()) {
-//            refreshResults();
-//        } else {
-//            Toast toast = Toast.makeText(getApplicationContext(), "Google Play Services required: " +
-//                    "after installing, close and relaunch this app.", Toast.LENGTH_SHORT);
-//            toast.show();
-//        }
-//    }
+      @Override
+      protected void onResume() {
+          super.onResume();
+          if (isGooglePlayServicesAvailable()) {
+              refreshResults();
+          } else {
+              Toast toast = Toast.makeText(getApplicationContext(), "Google Play Services required: " +
+                      "after installing, close and relaunch this app.", Toast.LENGTH_SHORT);
+              toast.show();
+          }
+      }
 
     /**
      * Called when an activity launched here (specifically, AccountPicker
@@ -322,44 +345,7 @@ public class MainActivity extends ActionBarActivity {
             int requestCode, int resultCode, Intent data) {
         Log.d("CAL: ", "On activity result");
         super.onActivityResult(requestCode, resultCode, data);
-        switch(requestCode) {
-            case REQUEST_GOOGLE_PLAY_SERVICES:
-                if (resultCode == RESULT_OK) {
-                    refreshResults();
-                } else {
-                    isGooglePlayServicesAvailable();
-                }
-                break;
-            case REQUEST_ACCOUNT_PICKER:
-                if (resultCode == RESULT_OK && data != null &&
-                        data.getExtras() != null) {
-                    String accountName =
-                            data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-                    if (accountName != null) {
-                        credential.setSelectedAccountName(accountName);
-                        SharedPreferences settings =
-                                getPreferences(Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = settings.edit();
-                        editor.putString(PREF_ACCOUNT_NAME, accountName);
-                        editor.commit();
-                        refreshResults();
-                    }
-                } else if (resultCode == RESULT_CANCELED) {
-                    isFinished = true;
-                    Toast toast = Toast.makeText(getApplicationContext(), "Account unspecified", Toast.LENGTH_SHORT);
-                    toast.show();
-                }
-                break;
-            case REQUEST_AUTHORIZATION:
-                if (resultCode == RESULT_OK) {
-                    refreshResults();
-                } else {
-                    chooseAccount();
-                }
-                break;
-        }
 
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     /**
@@ -369,11 +355,12 @@ public class MainActivity extends ActionBarActivity {
      */
     private void refreshResults() {
         Log.d("AdventureBuilderDebug","results refreshed!");
-        if (credential.getSelectedAccountName() == null) {
+        /*if (credential.getServiceAccountUser() == null) {
             Log.d("AdventureBuilderDebug","SELECTEd ACCOUNT IS NULL!");
             Log.d("Cal: ", "choosing account");
-            chooseAccount();
-        } else {
+            Intent i = new Intent(getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.GoogleLoginActivity.class);
+            startActivity(i);
+        } else {*/
             isFinished = true;
             Log.d("AdventureBuilderDebug","account selected");
             if (isDeviceOnline()) {
@@ -408,25 +395,17 @@ public class MainActivity extends ActionBarActivity {
 //                }
 ////                calStrings.addAll(eventStrings);
             } else {
-                Log.d("AdventureBuilderDebug","Divice is not online!");
+                Log.d("AdventureBuilderDebug","Device is not online!");
                 Toast toast = Toast.makeText(getApplicationContext(), "No network connection available", Toast.LENGTH_SHORT);
                 toast.show();
             }
-        }
+        //}
     }
 
     /**
      * Starts an activity in Google Play Services so the user can pick an
      * account.
      */
-    private void chooseAccount() {
-        //Intent intent = AccountPicker.newChooseAccountIntent(null, null, new String[]{"com.google"},
-         //       false, null, null, null, null);
-        //startActivityForResult(intent, REQUEST_ACCOUNT_PICKER);
-        Log.d("CAl: ", "After start activity for Result");
-       startActivityForResult(
-                credential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
-    }
 
     /**
      * Checks whether the device currently has a network connection.
@@ -951,8 +930,8 @@ public class MainActivity extends ActionBarActivity {
         }*/
 
         //addFacebookEvents();
-        //refreshResults();
-
+        refreshResults();
+       // CalandarQuickstart.main();
 
         //Log.i("ISFINISHED: ", "FALSE");
 
