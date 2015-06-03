@@ -354,14 +354,14 @@ public class MainActivity extends AppCompatActivity {
      * user can pick an account.
      */
     private void refreshResults() {
-        Log.d("AdventureBuilderDebug","results refreshed!");
+        Log.i("AdventureBuilderDebug","results refreshed!");
         /*if (credential.getServiceAccountUser() == null) {
             Log.d("AdventureBuilderDebug","SELECTEd ACCOUNT IS NULL!");
             Log.d("Cal: ", "choosing account");
             Intent i = new Intent(getApplicationContext(), edu.uchicago.cs234.spr15.ksercombe.adventurebuilder.GoogleLoginActivity.class);
             startActivity(i);
         } else {*/
-            isFinished = true;
+            //isFinished = true;
             Log.d("AdventureBuilderDebug","account selected");
             if (isDeviceOnline()) {
                 Log.d("AdventureBuilderDebug","apiasynctask started");
@@ -930,12 +930,13 @@ public class MainActivity extends AppCompatActivity {
         }*/
 
         //addFacebookEvents();
-        refreshResults();
+       // refreshResults();
        // CalandarQuickstart.main();
 
         //Log.i("ISFINISHED: ", "FALSE");
 
-
+        refreshResults();
+        Log.i("Main: ", "After refresh");
         addFacebookEvents();
        // while(isFinished == true) {
           //  Log.i("ISFINISHED: ", "TRUE");
